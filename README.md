@@ -1,14 +1,24 @@
-# CS35LProject
-This is our COM SCI 35L Project
+## Feature: Authentication (User Stories 1 & 2)
 
-Installation steps:
-Download git from https://git-scm.com/install/
-Download postgre from https://www.postgresql.org/download/
-Download Node.js
+### 1. Database Setup
+Ensure PostgreSQL is running and create the `users` table:
+\`\`\`sql
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    role VARCHAR(20) DEFAULT 'student'
+);
+\`\`\`
 
-Ran npm install -y inside "backend" folder
-npm i express pg cors
+### 2. Environment Variables
+Create a `.env` file in the `backend` folder:
+\`\`\`text
+DATABASE_URL=postgres://localhost:5432/foodapp_db
+JWT_SECRET=your_random_secret_string
+PORT=5001
+\`\`\`
 
-npm create vite@latest ./ inside "frontend" folder
-
-Vaguely following https://dev.to/aadarsh-nagrath/building-a-simple-crud-application-with-react-and-postgresql-using-docker-550i
+### 3. Running Locally
+- **Backend:** `cd backend && npm install && node index.js`
+- **Frontend:** `cd frontend && npm install && npm run dev`
