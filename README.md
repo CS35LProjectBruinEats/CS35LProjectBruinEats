@@ -10,3 +10,5 @@ Ran npm install -y inside "backend" folder
 npm i express pg cors
 
 npm create vite@latest ./ inside "frontend" folder
+
+Vaguely following https://dev.to/aadarsh-nagrath/building-a-simple-crud-application-with-react-and-postgresql-using-docker-550i
