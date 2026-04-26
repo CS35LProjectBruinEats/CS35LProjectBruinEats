@@ -27,21 +27,25 @@ In the terminal :
 
  psql postgres
 2. Execute SQL Commands:
- SQL
+ 
 
  -- Create the database
+ ```sql
 CREATE DATABASE foodopp_db;
-
+```
 -- Connect to the database
 \c foodopp_db
 
 -- Create the users table
+ ```sql
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     password TEXT NOT NULL,
     role VARCHAR(20) DEFAULT 'customer'
 );
+```
+
 Exit: Type \q and hit Enter.
 
 
