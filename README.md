@@ -6,9 +6,9 @@ Before starting, ensure your system meets these requirements:
 ---
 ##  Step-by-Step Setup
 ### 1. Clone and Branch Selection
-git clone https://github.com/ChessGamingPro/CS35LProject.git
-cd CS35LProject
-git checkout feature/auth-implementation
+1. git clone https://github.com/ChessGamingPro/CS35LProject.git
+2. cd CS35LProject
+3. git checkout feature/auth-implementation
 
 ### 2. Backend Initialization
 
@@ -21,12 +21,12 @@ git checkout feature/auth-implementation
 
 ### 3. Database & Schema Setup
    
-Use the psql command-line tool to set up your local database:
+1. Use the psql command-line tool to set up your local database:
 Open psql:
 In the terminal :
 
  psql postgres
-Execute SQL Commands:
+2. Execute SQL Commands:
  SQL
 
  -- Create the database
@@ -48,16 +48,16 @@ Exit: Type \q and hit Enter.
 
 ### 4. Frontend Initialization
 
-Open a new terminal window and navigate to the frontend directory: cd ../frontend
-Install dependencies: npm install
- Running the Application
-Start the Server (Backend)
-In the backend folder: node index.js
-Start the Client (Frontend)
-In the frontend folder: npm run dev
+1. Open a new terminal window and navigate to the frontend directory: cd ../frontend
+2. Install dependencies: npm install
 
-### 5. Testing
-Signup: Create a new account on the registration page.
-Login: Log in with the credentials you just created.
+
+### 5. Running the Application
+1. In the backend folder: node index.js
+2. In the frontend folder: npm run dev
+
+### 6. Testing
+1. Signup: Create a new account on the registration page.
+2. Login: Log in with the credentials you just created.
 
 
