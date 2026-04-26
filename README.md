@@ -29,14 +29,14 @@ In the terminal :
 2. Execute SQL Commands:
  
 
- -- Create the database
+ 1. Create the database
  ```sql
 CREATE DATABASE foodopp_db;
 ```
--- Connect to the database
-\c foodopp_db
+2.  Connect to the database: 
+   \c foodopp_db
 
--- Create the users table
+3. Create the users table
  ```sql
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -46,7 +46,7 @@ CREATE TABLE users (
 );
 ```
 
-Exit: Type \q and hit Enter.
+4. Exit: Type \q and hit Enter.
 
 
 
