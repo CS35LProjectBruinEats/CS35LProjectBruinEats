@@ -10,7 +10,7 @@ git clone https://github.com/ChessGamingPro/CS35LProject.git
 cd CS35LProject
 git checkout feature/auth-implementation
 
-###2. Backend Initialization
+### 2. Backend Initialization
 
 Navigate to the backend directory: cd backend
 Install dependencies: npm install express cors pg bcryptjs jsonwebtoken dotenv
@@ -19,7 +19,7 @@ Create a file named .env.
 Use .env_example as a template.
 Update DB_USER with your macOS/local machine username.
 
-###3. Database & Schema Setup
+### 3. Database & Schema Setup
    
 Use the psql command-line tool to set up your local database:
 Open psql:
@@ -46,7 +46,7 @@ Exit: Type \q and hit Enter.
 
 
 
-###4. Frontend Initialization
+### 4. Frontend Initialization
 
 Open a new terminal window and navigate to the frontend directory: cd ../frontend
 Install dependencies: npm install
@@ -56,7 +56,7 @@ In the backend folder: node index.js
 Start the Client (Frontend)
 In the frontend folder: npm run dev
 
-###5. Testing
+### 5. Testing
 Signup: Create a new account on the registration page.
 Login: Log in with the credentials you just created.
 
