@@ -23,20 +23,16 @@ Before starting, ensure your system meets these requirements:
    
 1. Use the psql command-line tool to set up your local database:
 Open psql:
-In the terminal :
+In the terminal :  psql postgres 
 
- psql postgres
-2. Execute SQL Commands:
- 
-
- 1. Create the database
+2. Create the database
  ```sql
 CREATE DATABASE foodopp_db;
 ```
-2.  Connect to the database: 
+3.  Connect to the database: 
    \c foodopp_db
 
-3. Create the users table
+4. Create the users table
  ```sql
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -46,7 +42,7 @@ CREATE TABLE users (
 );
 ```
 
-4. Exit: Type \q and hit Enter.
+5. Exit: Type \q and hit Enter.
 
 
 
