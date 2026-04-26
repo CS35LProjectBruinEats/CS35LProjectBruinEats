@@ -12,12 +12,12 @@ git checkout feature/auth-implementation
 
 ### 2. Backend Initialization
 
-Navigate to the backend directory: cd backend
-Install dependencies: npm install express cors pg bcryptjs jsonwebtoken dotenv
-Set up your Environment Variables:
-Create a file named .env.
-Use .env_example as a template.
-Update DB_USER with your macOS/local machine username.
+1. Navigate to the backend directory: cd backend
+2. Install dependencies: npm install express cors pg bcryptjs jsonwebtoken dotenv
+3. Set up your Environment Variables:
+4. Create a file named .env.
+5. Use .env_example as a template.
+6. Update DB_USER with your macOS/local machine username.
 
 ### 3. Database & Schema Setup
    
