@@ -21,9 +21,7 @@ Before starting, ensure your system meets these requirements:
 
 ### 3. Database & Schema Setup
    
-1. Use the psql command-line tool to set up your local database:
-Open psql:
-In the terminal :  psql postgres 
+1. In the terminal :  psql postgres 
 
 2. Create the database
  ```sql
