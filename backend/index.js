@@ -4,6 +4,7 @@ const pool = require('./db');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
+const opportunityRoutes = require('./routes/opportunities');
 
 const app = express();
 
@@ -19,6 +20,7 @@ pool.query('SELECT NOW()', (err, res) => {
 });
 
 app.use('/api', authRoutes);
+app.use('/api/opportunities', opportunityRoutes);
 
 const PORT = process.env.PORT || 5001;
 const server = app.listen(PORT, () => {
