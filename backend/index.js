@@ -1,9 +1,9 @@
 
+require('dotenv').config({ path: '../backend/.env' })
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const pool = require('./db');
-require('dotenv').config();
 
 const jwt = require('jsonwebtoken');
 
@@ -43,7 +43,7 @@ app.post('/api/signup', async (req, res) => {
 
         // 3. Insert user into database [cite: 15]
         const newUser = await pool.query(
-            'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username',
+            'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING user_id, username',
             [username, hashedPassword]
         );
 

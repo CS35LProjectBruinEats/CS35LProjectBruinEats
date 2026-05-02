@@ -3,6 +3,7 @@ This branch (`feature/auth-implementation`) contains the implementation for User
 ##  Prerequisites
 Before starting, ensure your system meets these requirements:
 * **Node.js**: Version **20.19+** or **22+**. (Check with `node -v`).
+Also install Postgres. Everything in the installer should be left as default, like the port being 5432 and the superuser being postgres. At the end, when it asks if you want to use the stack installer, decline (or just close it if you opened the stack installer).
 ---
 ##  Step-by-Step Setup
 ### 1. Clone and Branch Selection
@@ -14,14 +15,11 @@ Before starting, ensure your system meets these requirements:
 
 1. Navigate to the backend directory: cd backend
 2. Install dependencies: npm install express cors pg bcryptjs jsonwebtoken dotenv
-3. Set up your Environment Variables:
-4. Create a file named .env.
-5. Use .env_example as a template.
-6. Update DB_USER with your macOS/local machine username.
+3. Set up your Environment Variables: Create a file named .env (use .env_example as a template).
 
 ### 3. Database & Schema Setup
    
-1. In the terminal :  psql postgres 
+1. In the terminal :  psql -U postgres 
 
 2. Create the database
  ```sql
@@ -33,10 +31,20 @@ CREATE DATABASE foodopp_db;
 4. Create the users table
  ```sql
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
+    user_id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
-    password TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
     role VARCHAR(20) DEFAULT 'customer'
+);
+CREATE TABLE foodopps (
+    opp_id SERIAL PRIMARY KEY,
+    opp_name VARCHAR(100) NOT NULL,
+    opp_description TEXT,
+    opp_date DATE,
+    cost DECIMAL(10, 2) NOT NULL,
+    meal_period_name VARCHAR(50),
+    creator_user_id INT,
+    FOREIGN KEY (creator_user_id) REFERENCES users(user_id)
 );
 ```
 
@@ -48,11 +56,12 @@ CREATE TABLE users (
 
 1. Open a new terminal window and navigate to the frontend directory: cd ../frontend
 2. Install dependencies: npm install
+3. Install package to concurrently run frontend and backend: npm-run-all --save-dev
 
 
 ### 5. Running the Application
-1. In the backend folder: node index.js
-2. In the frontend folder: npm run dev
+1. INSIDE the frontend folder: npm run dev
+2. To exit: Ctrl+C, then Y to terminate both frontend and backend. 
 
 ### 6. Testing
 1. Signup: Create a new account on the registration page.

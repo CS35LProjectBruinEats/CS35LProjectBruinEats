@@ -1,5 +1,5 @@
 PORT=5001
-DB_USER=your_local_username
+DB_USER=postgres
 DB_HOST=localhost
 DB_NAME=foodopp_db
 DB_PASSWORD=
