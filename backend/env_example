@@ -1,0 +1,7 @@
+PORT=5001
+DB_USER=your_local_username
+DB_HOST=localhost
+DB_NAME=foodopp_db
+DB_PASSWORD=
+DB_PORT=5432
+JWT_SECRET=any_random_secret_string
