@@ -1,88 +1,80 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState } from 'react';
+import AuthForm from './components/AuthForm';
+import OpportunityForm from './components/OpportunityForm';
+import OpportunityList from './components/OpportunityList';
+import './App.css';
 
-function App() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [token, setToken] = useState(localStorage.getItem('token') || '');
-
-  // Helper to clear the input fields
-  const clearForm = () => {
-    setUsername('');
-    setPassword('');
-  };
-
-  const handleSignup = async (e) => {
-    e.preventDefault();
+const loadStoredUser = () => {
     try {
-      const response = await axios.post('http://localhost:5001/api/signup', { username, password });
-      setMessage(response.data.message);
-      clearForm(); // Form clears after successful signup
-    } catch (error) {
-      setMessage(error.response?.data?.error || 'Signup failed');
+        const raw = localStorage.getItem('user');
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
     }
-  };
+};
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post('http://localhost:5001/api/login', { username, password });
-      const receivedToken = response.data.token;
-      setToken(receivedToken);
-      localStorage.setItem('token', receivedToken);
-      localStorage.setItem('currentUser', username); // Store name to show in welcome message
-      setMessage("Login successful!");
-      // We don't necessarily need to clearForm here since the form disappears, 
-      // but it's good practice.
-    } catch (error) {
-      setMessage(error.response?.data?.error || 'Login failed');
-    }
-  };
+export default function App() {
+    const [user, setUser] = useState(loadStoredUser);
+    const [refreshKey, setRefreshKey] = useState(0);
+    const [statusMessage, setStatusMessage] = useState('');
 
-  const handleLogout = () => {
-    setToken('');
-    localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
-    clearForm(); // This fixes the issue you noticed!
-    setMessage("Logged out.");
-  };
+    const handleAuthSuccess = ({ token, user: nextUser, message }) => {
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(nextUser));
+        setUser(nextUser);
+        setStatusMessage(message || '');
+    };
 
-  return (
-    <div style={{ padding: '50px', textAlign: 'center', fontFamily: 'Arial' }}>
-      <h1>UCLA Food App</h1>
-      
-      {!token ? (
-        <>
-          <div style={{ border: '1px solid #ccc', padding: '20px', marginBottom: '20px', borderRadius: '8px' }}>
-            <h2>Sign Up / Login</h2>
-            <input 
-              type="text" placeholder="Username" value={username} 
-              onChange={(e) => setUsername(e.target.value)} 
-              style={{ display: 'block', margin: '10px auto', padding: '10px', width: '200px' }}
-            />
-            <input 
-              type="password" placeholder="Password" value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              style={{ display: 'block', margin: '10px auto', padding: '10px', width: '200px' }}
-            />
-            <button onClick={handleSignup} style={{ margin: '5px', padding: '10px 20px' }}>Sign Up</button>
-            <button onClick={handleLogin} style={{ margin: '5px', padding: '10px 20px', backgroundColor: '#0073e6', color: 'white', border: 'none', borderRadius: '4px' }}>Login</button>
-          </div>
-        </>
-      ) : (
-        <div style={{ border: '1px solid #4CAF50', padding: '20px', borderRadius: '8px' }}>
-          <h2>Welcome, {localStorage.getItem('currentUser')}!</h2>
-          <p>You are successfully authenticated.</p>
-          <button onClick={handleLogout} style={{ padding: '10px 20px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '4px' }}>Logout</button>
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+        setStatusMessage('Logged out.');
+    };
+
+    const handleOpportunityCreated = () => {
+        setRefreshKey((k) => k + 1);
+        setStatusMessage('Opportunity posted!');
+    };
+
+    useEffect(() => {
+        if (!statusMessage) return undefined;
+        const t = setTimeout(() => setStatusMessage(''), 3000);
+        return () => clearTimeout(t);
+    }, [statusMessage]);
+
+    return (
+        <div className="app">
+            <header className="app-header">
+                <h1>UCLA Food Opportunities</h1>
+                {user && (
+                    <div className="user-bar">
+                        <span>
+                            Hi, <strong>{user.username}</strong>{' '}
+                            <em className="role-tag">{user.role}</em>
+                        </span>
+                        <button type="button" onClick={handleLogout}>
+                            Log out
+                        </button>
+                    </div>
+                )}
+            </header>
+
+            {statusMessage && <p className="status">{statusMessage}</p>}
+
+            {!user ? (
+                <AuthForm onAuthSuccess={handleAuthSuccess} />
+            ) : (
+                <main className="dashboard">
+                    <section className="post-section">
+                        <OpportunityForm onCreated={handleOpportunityCreated} />
+                    </section>
+                    <section className="browse-section">
+                        <h2>All opportunities</h2>
+                        <OpportunityList refreshKey={refreshKey} />
+                    </section>
+                </main>
+            )}
         </div>
-      )}
-
-      {message && <p style={{ color: message.includes('failed') || message.includes('taken') ? 'red' : 'green' }}>
-        <strong>{message}</strong>
-      </p>}
-    </div>
-  );
+    );
 }
-
-export default App;
