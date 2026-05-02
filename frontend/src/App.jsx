@@ -1,122 +1,88 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useState } from 'react';
+import axios from 'axios';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [token, setToken] = useState(localStorage.getItem('token') || '');
+
+  // Helper to clear the input fields
+  const clearForm = () => {
+    setUsername('');
+    setPassword('');
+  };
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:5001/api/signup', { username, password });
+      setMessage(response.data.message);
+      clearForm(); // Form clears after successful signup
+    } catch (error) {
+      setMessage(error.response?.data?.error || 'Signup failed');
+    }
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:5001/api/login', { username, password });
+      const receivedToken = response.data.token;
+      setToken(receivedToken);
+      localStorage.setItem('token', receivedToken);
+      localStorage.setItem('currentUser', username); // Store name to show in welcome message
+      setMessage("Login successful!");
+      // We don't necessarily need to clearForm here since the form disappears, 
+      // but it's good practice.
+    } catch (error) {
+      setMessage(error.response?.data?.error || 'Login failed');
+    }
+  };
+
+  const handleLogout = () => {
+    setToken('');
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
+    clearForm(); // This fixes the issue you noticed!
+    setMessage("Logged out.");
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div style={{ padding: '50px', textAlign: 'center', fontFamily: 'Arial' }}>
+      <h1>UCLA Food App</h1>
+      
+      {!token ? (
+        <>
+          <div style={{ border: '1px solid #ccc', padding: '20px', marginBottom: '20px', borderRadius: '8px' }}>
+            <h2>Sign Up / Login</h2>
+            <input 
+              type="text" placeholder="Username" value={username} 
+              onChange={(e) => setUsername(e.target.value)} 
+              style={{ display: 'block', margin: '10px auto', padding: '10px', width: '200px' }}
+            />
+            <input 
+              type="password" placeholder="Password" value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              style={{ display: 'block', margin: '10px auto', padding: '10px', width: '200px' }}
+            />
+            <button onClick={handleSignup} style={{ margin: '5px', padding: '10px 20px' }}>Sign Up</button>
+            <button onClick={handleLogin} style={{ margin: '5px', padding: '10px 20px', backgroundColor: '#0073e6', color: 'white', border: 'none', borderRadius: '4px' }}>Login</button>
+          </div>
+        </>
+      ) : (
+        <div style={{ border: '1px solid #4CAF50', padding: '20px', borderRadius: '8px' }}>
+          <h2>Welcome, {localStorage.getItem('currentUser')}!</h2>
+          <p>You are successfully authenticated.</p>
+          <button onClick={handleLogout} style={{ padding: '10px 20px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '4px' }}>Logout</button>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      )}
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {message && <p style={{ color: message.includes('failed') || message.includes('taken') ? 'red' : 'green' }}>
+        <strong>{message}</strong>
+      </p>}
+    </div>
+  );
 }
 
-export default App
+export default App;

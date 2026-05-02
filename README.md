@@ -1,14 +1,70 @@
-# CS35LProject
-This is our COM SCI 35L Project
+# Food App Project - Authentication Feature
+This branch (`feature/auth-implementation`) contains the implementation for User Stories 1 & 2: User Registration and Login.
+##  Prerequisites
+Before starting, ensure your system meets these requirements:
+* **Node.js**: Version **20.19+** or **22+**. (Check with `node -v`).
+Also install Postgres. Everything in the installer should be left as default, like the port being 5432 and the superuser being postgres. At the end, when it asks if you want to use the stack installer, decline (or just close it if you opened the stack installer).
+---
+##  Step-by-Step Setup
+### 1. Clone and Branch Selection
+1. git clone https://github.com/ChessGamingPro/CS35LProject.git
+2. cd CS35LProject
+3. git checkout feature/auth-implementation
 
-Installation steps:
-Download git from https://git-scm.com/install/
-Download postgre from https://www.postgresql.org/download/
-Download Node.js
+### 2. Backend Initialization
 
-Ran npm install -y inside "backend" folder
-npm i express pg cors
+1. Navigate to the backend directory: cd backend
+2. Install dependencies: npm install express cors pg bcryptjs jsonwebtoken dotenv
+3. Set up your Environment Variables: Create a file named .env (use .env_example as a template).
 
-npm create vite@latest ./ inside "frontend" folder
+### 3. Database & Schema Setup
+   
+1. In the terminal :  psql -U postgres 
 
-Vaguely following https://dev.to/aadarsh-nagrath/building-a-simple-crud-application-with-react-and-postgresql-using-docker-550i
+2. Create the database
+ ```sql
+CREATE DATABASE foodopp_db;
+```
+3.  Connect to the database: 
+   \c foodopp_db
+
+4. Create the users table
+ ```sql
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    role VARCHAR(20) DEFAULT 'customer'
+);
+CREATE TABLE foodopps (
+    opp_id SERIAL PRIMARY KEY,
+    opp_name VARCHAR(100) NOT NULL,
+    opp_description TEXT,
+    opp_date DATE,
+    cost DECIMAL(10, 2) NOT NULL,
+    meal_period_name VARCHAR(50),
+    creator_user_id INT,
+    FOREIGN KEY (creator_user_id) REFERENCES users(user_id)
+);
+```
+
+5. Exit: Type \q and hit Enter.
+
+
+
+### 4. Frontend Initialization
+
+1. Open a new terminal window and navigate to the frontend directory: cd ../frontend
+2. Install dependencies: npm install
+3. Install package to concurrently run frontend and backend: npm-run-all --save-dev
+
+
+### 5. Running the Application
+1. INSIDE the frontend folder: npm run dev
+2. To exit: Ctrl+C, then Y to terminate both frontend and backend. 
+
+### 6. Testing
+1. Signup: Create a new account on the registration page.
+2. Login: Log in with the credentials you just created.
+
+
