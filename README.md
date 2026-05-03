@@ -7,5 +7,5 @@ ALTER TABLE foodopps ADD COLUMN location_name VARCHAR(100);
 ```
 
 
-npm install react-leaflet leaflet 
-The above command is needed to allow the map functionality to work.
+This command is needed to allow the map functionality to work:npm install react-leaflet leaflet 
+
