@@ -17,13 +17,23 @@
 .app-header h1 {
     margin: 0;
     font-size: 32px;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .user-bar {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 12px;
     font-size: 14px;
+    min-width: 0;
+}
+
+.user-bar > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .role-tag {
@@ -211,8 +221,12 @@ label > select {
 
 .opportunity-form .row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 12px;
+}
+
+.opportunity-form .row > label {
+    min-width: 0;
 }
 
 .opportunity-form button[type='submit'] {
