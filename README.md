@@ -21,24 +21,23 @@ git clone https://github.com/ChessGamingPro/CS35LProject.git
 cd CS35LProject
 ```
 
-### 2. Backend dependencies and environment
+### 2. Start the backend
 
 ```sh
 cd backend
-npm install
-cp env_example .env
+./start.sh
 ```
 
-Open `.env` and update `DB_USER` to your local Postgres username (often your macOS username).
+`start.sh` handles first-time setup automatically:
 
-### 3. Database schema
+- installs npm dependencies if `node_modules` is missing
+- creates `.env` from `env_example` if it doesn't exist, defaulting `DB_USER` to your current login user and generating a random `JWT_SECRET`
+- creates the `foodopp_db` database and loads `schema.sql` if the database or its tables are missing
+- starts the backend (`node index.js`)
 
-Create the database, then load the schema from `backend/schema.sql`:
+It checks that `node` and `psql` are available and that PostgreSQL is reachable, and exits with a hint if not (e.g. `brew services start postgresql`).
 
-```sh
-psql postgres -c "CREATE DATABASE foodopp_db;"
-psql foodopp_db -f schema.sql
-```
+If you'd rather configure things by hand, edit `backend/.env` before running `start.sh` — it only fills in defaults when the file is absent.
 
 `schema.sql` creates two tables:
 
@@ -47,26 +46,13 @@ psql foodopp_db -f schema.sql
 
 > If you set up an earlier version of this project, the `users` table previously had a column named `password` and a default role of `customer`. Re-running `schema.sql` will drop and recreate both tables — back up any data you want to keep first.
 
-### 4. Frontend dependencies
+### 3. Start the frontend
 
-```sh
-cd ../frontend
-npm install
-```
-
-### 5. Run
-
-In one terminal:
-
-```sh
-cd backend
-node index.js
-```
-
-In another:
+In another terminal:
 
 ```sh
 cd frontend
+npm install
 npm run dev
 ```
 
@@ -94,9 +80,11 @@ Authenticated requests use `Authorization: Bearer <jwt>`. The frontend's axios i
 
 ```
 backend/
+  start.sh              # one-shot setup + run script
   index.js              # express app + router mounting
   db.js                 # pg pool
   schema.sql            # database schema
+  env_example           # template for .env
   middleware/auth.js    # JWT verification middleware
   routes/auth.js        # /signup, /login
   routes/opportunities.js # GET / POST food opportunities
