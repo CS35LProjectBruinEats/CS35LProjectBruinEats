@@ -56,7 +56,7 @@ CREATE TABLE foodopps (
 
 1. Open a new terminal window and navigate to the frontend directory: cd ../frontend
 2. Install dependencies: npm install
-3. Install package to concurrently run frontend and backend: npm-run-all --save-dev
+3. Install package to concurrently run frontend and backend: npm install npm-run-all --save-dev
 
 
 ### 5. Running the Application
