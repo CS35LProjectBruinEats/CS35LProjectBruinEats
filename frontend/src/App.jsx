@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// U8: Added Map Imports
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// U8: Fix for Leaflet default marker icons in React
+// Fix for Leaflet default marker icons in React
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 let DefaultIcon = L.icon({
@@ -16,6 +15,7 @@ let DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
+// Coordinate mapping for User Story 8
 const CAMPUS_LOCATIONS = [
   { name: 'Ackerman Union', lat: 34.0704, lng: -118.4441 },
   { name: 'Bruin Plaza', lat: 34.0708, lng: -118.4450 },
@@ -30,18 +30,22 @@ const CAMPUS_LOCATIONS = [
 ];
 
 function App() {
+  // Auth State
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('customer'); 
   const [message, setMessage] = useState('');
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [userRole, setUserRole] = useState(localStorage.getItem('userRole') || '');
+
+  // Food Data State
   const [foodItems, setFoodItems] = useState([]);
-  
   const [foodData, setFoodData] = useState({ 
     name: '', description: '', date: '', cost: '', mealPeriod: 'Lunch', 
     locationName: CAMPUS_LOCATIONS[0].name 
   });
+  
+  // UI State
   const [editingId, setEditingId] = useState(null);
   const [mealFilter, setMealFilter] = useState('All');
   const [costFilter, setCostFilter] = useState('');
@@ -57,21 +61,12 @@ function App() {
 
   useEffect(() => { if (token) fetchFood(); }, [token, mealFilter, costFilter]);
 
-  const clearFormAndFilters = () => {
-    setUsername('');
-    setPassword('');
-    setFoodData({ name: '', description: '', date: '', cost: '', mealPeriod: 'Lunch', locationName: CAMPUS_LOCATIONS[0].name });
-    setEditingId(null);
-    setMealFilter('All');
-    setCostFilter('');
-  };
-
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
       await axios.post('http://localhost:5001/api/signup', { username, password, role });
       setMessage("User created! You can now login.");
-      clearFormAndFilters();
+      setUsername(''); setPassword('');
     } catch (error) { setMessage(error.response?.data?.error || 'Signup failed'); }
   };
 
@@ -79,36 +74,35 @@ function App() {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:5001/api/login', { username, password });
-      setToken(response.data.token);
-      setUserRole(response.data.user.role);
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('currentUser', response.data.user.username);
-      localStorage.setItem('userRole', response.data.user.role);
+      const { token, user } = response.data;
+      setToken(token);
+      setUserRole(user.role);
+      localStorage.setItem('token', token);
+      localStorage.setItem('currentUser', user.username);
+      localStorage.setItem('userRole', user.role);
       setMessage("Login successful!");
-      clearFormAndFilters(); 
     } catch (error) { setMessage(error.response?.data?.error || 'Login failed'); }
   };
 
   const handleLogout = () => {
-    setToken('');
-    setUserRole('');
+    setToken(''); setUserRole('');
     localStorage.clear();
-    clearFormAndFilters();
     setMessage("Logged out.");
   };
 
   const handleSaveFood = async (e) => {
     e.preventDefault();
-    const currentUser = localStorage.getItem('currentUser');
+    const currentUsername = localStorage.getItem('currentUser');
     try {
       if (editingId) {
         await axios.put(`http://localhost:5001/api/food-opportunities/${editingId}`, foodData);
       } else {
-        await axios.post('http://localhost:5001/api/food-opportunities', { ...foodData, username: currentUser });
+        await axios.post('http://localhost:5001/api/food-opportunities', { ...foodData, username: currentUsername });
       }
-      clearFormAndFilters();
+      setEditingId(null);
+      setFoodData({ name: '', description: '', date: '', cost: '', mealPeriod: 'Lunch', locationName: CAMPUS_LOCATIONS[0].name });
       fetchFood();
-      setMessage("Opportunity saved successfully!");
+      setMessage("Saved successfully!");
     } catch (error) { setMessage('Operation failed'); }
   };
 
@@ -122,27 +116,19 @@ function App() {
       mealPeriod: item.meal_period_name,
       locationName: item.location_name || CAMPUS_LOCATIONS[0].name
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this listing?")) {
+    if (window.confirm("Delete this listing?")) {
       try {
         await axios.delete(`http://localhost:5001/api/food-opportunities/${id}`);
-        setMessage("Listing deleted.");
         fetchFood();
-      } catch (error) { setMessage("Failed to delete listing."); }
+      } catch (error) { setMessage("Failed to delete."); }
     }
   };
 
-  // U8: Helper function to match text location to coordinates
-  const getCoordinates = (locName) => {
-    const loc = CAMPUS_LOCATIONS.find(l => l.name === locName);
-    return loc ? [loc.lat, loc.lng] : null;
-  };
-
   return (
-    <div style={{ padding: '30px', textAlign: 'center', fontFamily: 'Arial, sans-serif', backgroundColor: '#f4f7f6', minHeight: '100vh' }}>
+    <div style={{ padding: '30px', textAlign: 'center', fontFamily: 'Arial', backgroundColor: '#f4f7f6', minHeight: '100vh' }}>
       <h1>UCLA Food App</h1>
       
       {!token ? (
@@ -162,7 +148,7 @@ function App() {
         <div style={{ maxWidth: '900px', margin: 'auto' }}>
           <div style={{ background: '#fff', padding: '15px', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>Welcome, <strong>{localStorage.getItem('currentUser')}</strong> ({userRole})</span>
-            <button onClick={handleLogout} style={{ backgroundColor: '#f44336', color: 'white', padding: '8px 15px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Logout</button>
+            <button onClick={handleLogout} style={{ backgroundColor: '#f44336', color: 'white', padding: '8px 15px', border: 'none', borderRadius: '4px' }}>Logout</button>
           </div>
 
           {userRole === 'vendor' && (
@@ -180,55 +166,50 @@ function App() {
                   <option value="Breakfast">Breakfast</option><option value="Lunch">Lunch</option><option value="Dinner">Dinner</option>
                 </select>
                 <div style={{ marginTop: '15px' }}>
-                    <button type="submit" style={{ backgroundColor: '#4CAF50', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>{editingId ? "Update Post" : "Post Food"}</button>
-                    {editingId && <button type="button" onClick={clearFormAndFilters} style={{ marginLeft: '10px', padding: '10px 20px' }}>Cancel</button>}
+                    <button type="submit" style={{ backgroundColor: '#4CAF50', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '4px' }}>{editingId ? "Update Post" : "Post Food"}</button>
+                    {editingId && <button type="button" onClick={() => setEditingId(null)} style={{ marginLeft: '10px' }}>Cancel</button>}
                 </div>
               </form>
             </div>
           )}
 
-          {/* U8: New Map Component */}
+          {/* Map Section */}
           <div style={{ height: '350px', width: '100%', marginBottom: '20px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ccc' }}>
             <MapContainer center={[34.0715, -118.4450]} zoom={15} style={{ height: '100%', width: '100%' }}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               {foodItems.map((item) => {
-                const coords = getCoordinates(item.location_name);
-                return coords ? (
-                  <Marker key={item.opp_id} position={coords}>
-                    <Popup>
-                      <strong>{item.opp_name}</strong><br />
-                      {item.location_name}<br />
-                      {item.meal_period_name} - ${item.cost}
-                    </Popup>
+                const loc = CAMPUS_LOCATIONS.find(l => l.name === item.location_name);
+                return loc ? (
+                  <Marker key={item.opp_id} position={[loc.lat, loc.lng]}>
+                    <Popup><strong>{item.opp_name}</strong><br />{item.meal_period_name} - ${item.cost}</Popup>
                   </Marker>
                 ) : null;
               })}
             </MapContainer>
           </div>
 
-          {/* Filters */}
-          <div style={{ background: '#fff', padding: '15px', borderRadius: '8px', marginBottom: '20px', display: 'flex', gap: '15px', justifyContent: 'center', alignItems: 'center' }}>
-            <label>Meal: <select value={mealFilter} onChange={(e) => setMealFilter(e.target.value)} style={{ padding: '5px' }}><option value="All">All</option><option value="Breakfast">Breakfast</option><option value="Lunch">Lunch</option><option value="Dinner">Dinner</option></select></label>
-            <label>Max $: <input type="number" value={costFilter} onChange={(e) => setCostFilter(e.target.value)} style={{ width: '60px', padding: '5px' }}/></label>
-            <button onClick={clearFormAndFilters} style={{ padding: '5px 10px' }}>Reset</button>
+          {/* Filters Section */}
+          <div style={{ background: '#fff', padding: '15px', borderRadius: '8px', marginBottom: '20px', display: 'flex', gap: '15px', justifyContent: 'center' }}>
+            <label>Meal: <select value={mealFilter} onChange={(e) => setMealFilter(e.target.value)}><option value="All">All</option><option value="Breakfast">Breakfast</option><option value="Lunch">Lunch</option><option value="Dinner">Dinner</option></select></label>
+            <label>Max $: <input type="number" value={costFilter} onChange={(e) => setCostFilter(e.target.value)} style={{ width: '60px' }}/></label>
           </div>
 
+          {/* Listings Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
             {foodItems.map((item) => (
               <div key={item.opp_id} style={{ background: 'white', padding: '15px', borderRadius: '8px', textAlign: 'left', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ color: '#0073e6', margin: '0' }}>{item.opp_name}</h3>
-                <p style={{ margin: '5px 0', fontSize: '0.9rem' }}>📍 <strong>{item.location_name || 'Campus'}</strong></p>
+                <p style={{ margin: '5px 0' }}>📍 {item.location_name}</p>
                 <p style={{ color: '#666', fontSize: '0.9rem' }}>{item.opp_description}</p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
                     <span>{item.meal_period_name}</span>
                     <span style={{ color: '#27ae60' }}>${item.cost}</span>
                 </div>
-                <p style={{ fontSize: '0.75rem', color: '#999' }}>Date: {new Date(item.opp_date).toLocaleDateString()}</p>
-                
+                {/* ownership check */}
                 {localStorage.getItem('currentUser') === item.creator_username && (
-                  <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '10px', display: 'flex', gap: '5px' }}>
-                    <button onClick={() => startEdit(item)} style={{ flex: 1, padding: '5px', cursor: 'pointer' }}>Edit</button>
-                    <button onClick={() => handleDelete(item.opp_id)} style={{ flex: 1, padding: '5px', cursor: 'pointer', backgroundColor: '#ffebee', color: '#c62828', border: '1px solid #c62828' }}>Delete</button>
+                  <div style={{ marginTop: '10px', display: 'flex', gap: '5px' }}>
+                    <button onClick={() => startEdit(item)} style={{ flex: 1 }}>Edit</button>
+                    <button onClick={() => handleDelete(item.opp_id)} style={{ flex: 1, color: 'red' }}>Delete</button>
                   </div>
                 )}
               </div>
