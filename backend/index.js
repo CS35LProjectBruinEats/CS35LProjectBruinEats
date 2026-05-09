@@ -1,9 +1,9 @@
-
+require('dotenv').config({ path: '../backend/.env' })
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const pool = require('./db');
-require('dotenv').config();
+
 
 const jwt = require('jsonwebtoken');
 
