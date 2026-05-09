@@ -43,7 +43,7 @@ app.post('/api/signup', async (req, res) => {
 
         // 3. Insert user into database [cite: 15]
         const newUser = await pool.query(
-            'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username',
+            'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING user_id, username',
             [username, hashedPassword]
         );
 
@@ -74,7 +74,7 @@ app.post('/api/login', async (req, res) => {
 
         // 3. Create a JWT Token
         const token = jwt.sign(
-            { userId: user.id, username: user.username },
+            { userId: user.user_id, username: user.username },
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
