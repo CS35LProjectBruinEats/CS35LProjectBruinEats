@@ -179,8 +179,12 @@ function App() {
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               {foodItems.map((item) => {
                 const loc = CAMPUS_LOCATIONS.find(l => l.name === item.location_name);
-                return loc ? (
-                  <Marker key={item.opp_id} position={[loc.lat, loc.lng]}>
+                const isEditing = editingId === item.opp_id;
+                const locationToUse = isEditing 
+                  ? CAMPUS_LOCATIONS.find(l => l.name === foodData.locationName) 
+                  : loc;
+                return locationToUse ? (
+                  <Marker key={item.opp_id} position={[locationToUse.lat, locationToUse.lng]}>
                     <Popup><strong>{item.opp_name}</strong><br />{item.meal_period_name} - ${item.cost}</Popup>
                   </Marker>
                 ) : null;
