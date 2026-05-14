@@ -129,11 +129,11 @@ function App() {
 
   return (
     <div style={{ padding: '30px', textAlign: 'center', fontFamily: 'Arial', backgroundColor: '#f4f7f6', minHeight: '100vh' }}>
-      <h1>UCLA Food App</h1>
+      <h1><span style={{ color: '#2774AE' }}>Bruin</span><span style={{ color: '#FFD100' }}>Eats</span></h1>
       
       {!token ? (
         <div style={{ border: '1px solid #ccc', padding: '20px', backgroundColor: 'white', borderRadius: '8px', maxWidth: '400px', margin: 'auto' }}>
-          <h2>Sign Up / Login</h2>
+          <h2 style={{ color: 'black' }}>Sign Up / Login</h2>
           <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} style={{ display: 'block', margin: '10px auto', padding: '10px', width: '85%' }} />
           <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ display: 'block', margin: '10px auto', padding: '10px', width: '85%' }} />
           <select value={role} onChange={(e) => setRole(e.target.value)} style={{ padding: '8px', marginBottom: '10px' }}>
