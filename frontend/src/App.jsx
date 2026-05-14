@@ -174,9 +174,8 @@ function App() {
           )}
 
           {/* Map Section */}
-          <div style={{ height: '350px', width: '100%', marginBottom: '20px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ccc' }}>
-            <MapContainer center={[34.0715, -118.4450]} zoom={15} style={{ height: '100%', width: '100%' }}>
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <div style={{ height: '400px', width: '100%', marginBottom: '20px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ccc' }}>
+            <MapContainer center={[34.0705, -118.4450]} zoom={14.5} minZoom={14.25} style={{ height: '100%', width: '100%' }}>              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               {foodItems.map((item) => {
                 const loc = CAMPUS_LOCATIONS.find(l => l.name === item.location_name);
                 const isEditing = editingId === item.opp_id;
