@@ -119,5 +119,37 @@ app.delete('/api/food-opportunities/:id', async (req, res) => {
     }
 });
 
+// --- Save an opportunity to personal schedule (story 9) ---
+// Save an opportunity
+app.post('/api/saved', async (req, res) => {
+    const { username, opp_id } = req.body;
+    try {
+        const user = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
+        await pool.query(
+            'INSERT INTO saved_opportunities (user_id, opp_id) VALUES ($1, $2)',
+            [user.rows[0].user_id, opp_id]
+        );
+        res.json({ message: 'Saved!' });
+    } catch (err) {
+        if (err.code === '23505') return res.status(400).json({ error: 'Already saved' });
+        res.status(500).send('Server error');
+    }
+});
+
+// Get saved opportunities for a user
+app.get('/api/saved', async (req, res) => {
+    const { username } = req.query;
+    try {
+        const user = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
+        const result = await pool.query(
+            'SELECT f.* FROM foodopps f JOIN saved_opportunities s ON f.opp_id = s.opp_id WHERE s.user_id = $1',
+            [user.rows[0].user_id]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+});
+
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

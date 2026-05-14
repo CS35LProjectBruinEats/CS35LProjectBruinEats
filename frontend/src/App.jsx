@@ -37,6 +37,8 @@ function App() {
   const [message, setMessage] = useState('');
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [userRole, setUserRole] = useState(localStorage.getItem('userRole') || '');
+  const [savedItems, setSavedItems] = useState([]);
+  const [showSchedule, setShowSchedule] = useState(false);
 
   // Food Data State
   const [foodItems, setFoodItems] = useState([]);
@@ -59,7 +61,17 @@ function App() {
     } catch (error) { console.error("Error fetching food:", error); }
   };
 
-  useEffect(() => { if (token) fetchFood(); }, [token, mealFilter, costFilter]);
+    //user's saved opportunities
+  const fetchSaved = async () => {
+    try {
+        const response = await axios.get('http://localhost:5001/api/saved', {
+            params: { username: localStorage.getItem('currentUser') }
+        });
+        setSavedItems(response.data);
+    } catch (error) { console.error("Error fetching saved:", error); }
+  };
+
+  useEffect(() => { if (token) { fetchFood(); fetchSaved(); } }, [token, mealFilter, costFilter]);
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -126,6 +138,8 @@ function App() {
       } catch (error) { setMessage("Failed to delete."); }
     }
   };
+
+
 
   return (
     <div style={{ padding: '30px', textAlign: 'center', fontFamily: 'Arial', backgroundColor: '#f4f7f6', minHeight: '100vh' }}>
@@ -215,9 +229,33 @@ function App() {
                     <button onClick={() => handleDelete(item.opp_id)} style={{ flex: 1, color: 'red' }}>Delete</button>
                   </div>
                 )}
+                <button onClick={async () => {
+                  try {
+                      await axios.post('http://localhost:5001/api/saved', {
+                          username: localStorage.getItem('currentUser'),
+                          opp_id: item.opp_id
+                      });
+                      setMessage('Saved to your schedule!');
+                      fetchSaved();
+                  } catch (err) {
+                      setMessage(err.response?.data?.error || 'Failed to save');
+                  }
+                }} style={{ marginTop: '10px', width: '100%' }}>Save to Schedule</button>
               </div>
             ))}
           </div>
+            <div style={{ marginTop: '30px', background: 'white', padding: '20px', borderRadius: '8px' }}>
+              <h3>My Schedule</h3>
+              {savedItems.length === 0 ? (
+                <p>No opportunities saved yet.</p>
+              ) : (
+                savedItems.map(item => (
+                  <div key={item.opp_id} style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
+                    <strong>{item.opp_name}</strong> — {item.meal_period_name} — ${item.cost}
+                  </div>
+                ))
+              )}
+            </div>
         </div>
       )}
       {message && <p style={{ marginTop: '20px' }}><strong>{message}</strong></p>}
