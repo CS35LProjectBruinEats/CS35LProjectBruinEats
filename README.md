@@ -21,3 +21,16 @@ CREATE TABLE saved_opportunities (
     UNIQUE(user_id, opp_id)
 );
 ```
+
+For RSVPs (story 10), add a capacity column and an rsvps table:
+
+```sql
+ALTER TABLE foodopps ADD COLUMN rsvp_capacity INT;
+
+CREATE TABLE rsvps (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    opp_id INT REFERENCES foodopps(opp_id) ON DELETE CASCADE,
+    UNIQUE(user_id, opp_id)
+);
+```
