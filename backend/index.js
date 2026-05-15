@@ -76,16 +76,20 @@ app.get('/api/food-opportunities', async (req, res) => {
 });
 
 app.post('/api/food-opportunities', async (req, res) => {
-    const { name, description, date, cost, mealPeriod, locationName, username } = req.body;
+    const { name, description, date, cost, mealPeriod, locationName, username, rsvpCapacity } = req.body;
     try {
         // First, find the user_id for the username provided
         const userRes = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
         const userId = userRes.rows[0].user_id;
 
+        const capacity = rsvpCapacity === '' || rsvpCapacity === undefined || rsvpCapacity === null
+            ? null
+            : Number(rsvpCapacity);
+
         const result = await pool.query(
-            `INSERT INTO foodopps (opp_name, opp_description, opp_date, cost, meal_period_name, location_name, creator_user_id) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-            [name, description, date, cost, mealPeriod, locationName, userId]
+            `INSERT INTO foodopps (opp_name, opp_description, opp_date, cost, meal_period_name, location_name, creator_user_id, rsvp_capacity)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+            [name, description, date, cost, mealPeriod, locationName, userId, capacity]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -97,12 +101,15 @@ app.post('/api/food-opportunities', async (req, res) => {
 
 app.put('/api/food-opportunities/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, description, date, cost, mealPeriod, locationName } = req.body;
+    const { name, description, date, cost, mealPeriod, locationName, rsvpCapacity } = req.body;
     try {
+        const capacity = rsvpCapacity === '' || rsvpCapacity === undefined || rsvpCapacity === null
+            ? null
+            : Number(rsvpCapacity);
         await pool.query(
-            `UPDATE foodopps SET opp_name=$1, opp_description=$2, opp_date=$3, cost=$4, meal_period_name=$5, location_name=$6 
-             WHERE opp_id=$7`,
-            [name, description, date, cost, mealPeriod, locationName, id]
+            `UPDATE foodopps SET opp_name=$1, opp_description=$2, opp_date=$3, cost=$4, meal_period_name=$5, location_name=$6, rsvp_capacity=$7
+             WHERE opp_id=$8`,
+            [name, description, date, cost, mealPeriod, locationName, capacity, id]
         );
         res.json({ message: "Updated" });
     } catch (err) {
