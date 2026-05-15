@@ -170,5 +170,58 @@ app.get('/api/saved', async (req, res) => {
     }
 });
 
+// --- RSVP (story 10) ---
+
+app.post('/api/rsvp', async (req, res) => {
+    const { username, opp_id } = req.body;
+    const client = await pool.connect();
+    try {
+        const user = await client.query('SELECT user_id FROM users WHERE username = $1', [username]);
+        if (user.rows.length === 0) return res.status(400).json({ error: 'User not found' });
+        const userId = user.rows[0].user_id;
+
+        // Lock the opportunity row so capacity check and insert are atomic
+        await client.query('BEGIN');
+        const opp = await client.query('SELECT rsvp_capacity FROM foodopps WHERE opp_id = $1 FOR UPDATE', [opp_id]);
+        if (opp.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Opportunity not found' });
+        }
+        const capacity = opp.rows[0].rsvp_capacity;
+        if (capacity !== null) {
+            const count = await client.query('SELECT COUNT(*)::int AS n FROM rsvps WHERE opp_id = $1', [opp_id]);
+            if (count.rows[0].n >= capacity) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ error: 'Event is full' });
+            }
+        }
+        await client.query('INSERT INTO rsvps (user_id, opp_id) VALUES ($1, $2)', [userId, opp_id]);
+        await client.query('COMMIT');
+        res.json({ message: 'RSVP confirmed' });
+    } catch (err) {
+        await client.query('ROLLBACK').catch(() => {});
+        if (err.code === '23505') return res.status(400).json({ error: 'Already RSVPed' });
+        res.status(500).json({ error: err.message });
+    } finally {
+        client.release();
+    }
+});
+
+app.delete('/api/rsvp', async (req, res) => {
+    const { username, opp_id } = req.body;
+    try {
+        const user = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
+        if (user.rows.length === 0) return res.status(400).json({ error: 'User not found' });
+        const result = await pool.query(
+            'DELETE FROM rsvps WHERE user_id = $1 AND opp_id = $2',
+            [user.rows[0].user_id, opp_id]
+        );
+        if (result.rowCount === 0) return res.status(404).json({ error: 'No RSVP to cancel' });
+        res.json({ message: 'RSVP cancelled' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
