@@ -49,15 +49,27 @@ app.post('/api/login', async (req, res) => {
 // --- FOOD OPPORTUNITIES (Stories 3, 4, 7, 8) ---
 
 app.get('/api/food-opportunities', async (req, res) => {
-    const { meal, maxCost } = req.query;
+    const { meal, maxCost, username } = req.query;
     try {
-        // We JOIN with users so the frontend can see the 'creator_username'
+        // Look up viewer's user_id (if any) so we can attach per-user RSVP state
+        let viewerId = null;
+        if (username) {
+            const viewer = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
+            if (viewer.rows.length > 0) viewerId = viewer.rows[0].user_id;
+        }
+
+        // We JOIN with users so the frontend can see the 'creator_username'.
+        // Subqueries return current RSVP count and whether the viewer has RSVPed.
         let query = `
-            SELECT f.*, u.username as creator_username 
-            FROM foodopps f 
-            JOIN users u ON f.creator_user_id = u.user_id 
+            SELECT f.*, u.username as creator_username,
+                   (SELECT COUNT(*)::int FROM rsvps r WHERE r.opp_id = f.opp_id) AS rsvp_count,
+                   CASE WHEN $1::int IS NULL THEN false
+                        ELSE EXISTS(SELECT 1 FROM rsvps r WHERE r.opp_id = f.opp_id AND r.user_id = $1::int)
+                   END AS user_has_rsvped
+            FROM foodopps f
+            JOIN users u ON f.creator_user_id = u.user_id
             WHERE 1=1`;
-        let params = [];
+        let params = [viewerId];
 
         if (meal && meal !== 'All') {
             params.push(meal);
