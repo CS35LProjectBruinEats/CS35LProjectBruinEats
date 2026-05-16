@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { api } from '../api';
 
-const initial = {
+const blank = {
     title: '',
     organization: '',
     location: '',
@@ -12,8 +12,30 @@ const initial = {
     description: '',
 };
 
-export default function OpportunityForm({ onCreated }) {
-    const [fields, setFields] = useState(initial);
+const toDatetimeLocal = (iso) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
+const fromOpportunity = (o) => ({
+    title: o.title ?? '',
+    organization: o.organization ?? '',
+    location: o.location ?? '',
+    start_time: toDatetimeLocal(o.start_time),
+    end_time: toDatetimeLocal(o.end_time),
+    food_items: o.food_items ?? '',
+    cost: o.cost === null || o.cost === undefined ? '' : String(o.cost),
+    description: o.description ?? '',
+});
+
+export default function OpportunityForm({ opportunity, onSaved, onCancel }) {
+    const isEdit = Boolean(opportunity);
+    const [fields, setFields] = useState(() =>
+        opportunity ? fromOpportunity(opportunity) : blank
+    );
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
@@ -29,11 +51,16 @@ export default function OpportunityForm({ onCreated }) {
                 ...fields,
                 cost: fields.cost === '' ? 0 : Number(fields.cost),
             };
-            const res = await api.post('/opportunities', payload);
-            setFields(initial);
-            onCreated?.(res.data.opportunity);
+            const res = isEdit
+                ? await api.put(`/opportunities/${opportunity.id}`, payload)
+                : await api.post('/opportunities', payload);
+            if (!isEdit) setFields(blank);
+            onSaved?.(res.data.opportunity, { isEdit });
         } catch (err) {
-            setError(err.response?.data?.error || 'Could not post opportunity');
+            const fallback = isEdit
+                ? 'Could not save changes'
+                : 'Could not post opportunity';
+            setError(err.response?.data?.error || fallback);
         } finally {
             setSubmitting(false);
         }
@@ -41,7 +68,7 @@ export default function OpportunityForm({ onCreated }) {
 
     return (
         <form className="opportunity-form" onSubmit={submit}>
-            <h3>Post a food opportunity</h3>
+            <h3>{isEdit ? 'Edit opportunity' : 'Post a food opportunity'}</h3>
 
             <label>
                 Title*
@@ -128,9 +155,23 @@ export default function OpportunityForm({ onCreated }) {
                 />
             </label>
 
-            <button type="submit" disabled={submitting}>
-                {submitting ? 'Posting...' : 'Post opportunity'}
-            </button>
+            <div className="form-actions">
+                <button type="submit" disabled={submitting}>
+                    {submitting
+                        ? isEdit ? 'Saving...' : 'Posting...'
+                        : isEdit ? 'Save changes' : 'Post opportunity'}
+                </button>
+                {isEdit && (
+                    <button
+                        type="button"
+                        className="secondary"
+                        onClick={onCancel}
+                        disabled={submitting}
+                    >
+                        Cancel
+                    </button>
+                )}
+            </div>
             {error && <p className="error">{error}</p>}
         </form>
     );
