@@ -9,7 +9,7 @@ const formatCost = (cost) => {
     return n === 0 ? 'Free' : `$${n.toFixed(2)}`;
 };
 
-export default function OpportunityList({ refreshKey }) {
+export default function OpportunityList({ refreshKey, currentUserId, onEdit, editingId }) {
     const [state, setState] = useState({ status: 'loading', items: [], error: '' });
 
     useEffect(() => {
@@ -48,35 +48,54 @@ export default function OpportunityList({ refreshKey }) {
 
     return (
         <ul className="opportunity-list">
-            {state.items.map((o) => (
-                <li key={o.id} className="opportunity-card">
-                    <div className="card-header">
-                        <h4>{o.title}</h4>
-                        <span className="cost-badge">{formatCost(o.cost)}</span>
-                    </div>
-                    <p className="meta">
-                        <span>{o.location}</span>
-                        <span aria-hidden="true"> · </span>
-                        <span>
-                            {formatDateTime(o.start_time)} — {formatDateTime(o.end_time)}
-                        </span>
-                    </p>
-                    {o.organization && (
-                        <p>
-                            <strong>Hosted by:</strong> {o.organization}
+            {state.items.map((o) => {
+                const isMine = currentUserId != null && o.vendor_id === currentUserId;
+                const isEditing = editingId === o.id;
+                return (
+                    <li
+                        key={o.id}
+                        className={`opportunity-card${isEditing ? ' is-editing' : ''}`}
+                    >
+                        <div className="card-header">
+                            <h4>{o.title}</h4>
+                            <span className="cost-badge">{formatCost(o.cost)}</span>
+                        </div>
+                        <p className="meta">
+                            <span>{o.location}</span>
+                            <span aria-hidden="true"> · </span>
+                            <span>
+                                {formatDateTime(o.start_time)} — {formatDateTime(o.end_time)}
+                            </span>
                         </p>
-                    )}
-                    {o.food_items && (
-                        <p>
-                            <strong>Served:</strong> {o.food_items}
-                        </p>
-                    )}
-                    {o.description && <p className="description">{o.description}</p>}
-                    <p className="poster">
-                        Posted by {o.posted_by} ({o.posted_by_role})
-                    </p>
-                </li>
-            ))}
+                        {o.organization && (
+                            <p>
+                                <strong>Hosted by:</strong> {o.organization}
+                            </p>
+                        )}
+                        {o.food_items && (
+                            <p>
+                                <strong>Served:</strong> {o.food_items}
+                            </p>
+                        )}
+                        {o.description && <p className="description">{o.description}</p>}
+                        <div className="card-footer">
+                            <p className="poster">
+                                Posted by {o.posted_by} ({o.posted_by_role})
+                            </p>
+                            {isMine && (
+                                <button
+                                    type="button"
+                                    className="link"
+                                    onClick={() => onEdit?.(o)}
+                                    disabled={isEditing}
+                                >
+                                    {isEditing ? 'Editing…' : 'Edit'}
+                                </button>
+                            )}
+                        </div>
+                    </li>
+                );
+            })}
         </ul>
     );
 }
