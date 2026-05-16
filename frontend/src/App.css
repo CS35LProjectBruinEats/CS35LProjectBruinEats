@@ -187,6 +187,10 @@ label > select {
     align-items: start;
 }
 
+.dashboard--single {
+    grid-template-columns: 1fr;
+}
+
 @media (max-width: 800px) {
     .dashboard {
         grid-template-columns: 1fr;
@@ -229,9 +233,28 @@ label > select {
     min-width: 0;
 }
 
-.opportunity-form button[type='submit'] {
-    width: 100%;
+.opportunity-form .form-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.opportunity-form .form-actions button[type='submit'] {
+    flex: 1;
     padding: 11px;
+}
+
+.opportunity-form .form-actions button[type='button'] {
+    padding: 11px 16px;
+}
+
+button.secondary {
+    background: transparent;
+    color: var(--text-h);
+    border: 1px solid var(--border);
+}
+
+button.secondary:hover:not(:disabled) {
+    background: var(--accent-bg);
 }
 
 /* Opportunity list */
@@ -291,8 +314,21 @@ label > select {
 }
 
 .opportunity-card .poster {
-    margin-top: 10px;
+    margin: 0;
     color: var(--text);
     font-size: 12px;
     font-style: italic;
+}
+
+.opportunity-card .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.opportunity-card.is-editing {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-bg);
 }
