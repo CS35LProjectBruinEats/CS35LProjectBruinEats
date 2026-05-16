@@ -55,7 +55,11 @@ function App() {
   const fetchFood = async () => {
     try {
       const response = await axios.get('http://localhost:5001/api/food-opportunities', {
-        params: { meal: mealFilter, maxCost: costFilter }
+        params: {
+          meal: mealFilter,
+          maxCost: costFilter,
+          username: localStorage.getItem('currentUser') || undefined
+        }
       });
       setFoodItems(response.data);
     } catch (error) { console.error("Error fetching food:", error); }
@@ -137,6 +141,31 @@ function App() {
         await axios.delete(`http://localhost:5001/api/food-opportunities/${id}`);
         fetchFood();
       } catch (error) { setMessage("Failed to delete."); }
+    }
+  };
+
+  const handleRsvp = async (oppId) => {
+    try {
+      await axios.post('http://localhost:5001/api/rsvp', {
+        username: localStorage.getItem('currentUser'),
+        opp_id: oppId
+      });
+      setMessage('RSVP confirmed!');
+      fetchFood();
+    } catch (err) {
+      setMessage(err.response?.data?.error || 'RSVP failed');
+    }
+  };
+
+  const handleCancelRsvp = async (oppId) => {
+    try {
+      await axios.delete('http://localhost:5001/api/rsvp', {
+        data: { username: localStorage.getItem('currentUser'), opp_id: oppId }
+      });
+      setMessage('RSVP cancelled.');
+      fetchFood();
+    } catch (err) {
+      setMessage(err.response?.data?.error || 'Cancel failed');
     }
   };
 
@@ -231,6 +260,27 @@ function App() {
                     <button onClick={() => handleDelete(item.opp_id)} style={{ flex: 1, color: 'red' }}>Delete</button>
                   </div>
                 )}
+                {/* RSVP block (story 10) */}
+                {(() => {
+                  const cap = item.rsvp_capacity;
+                  const count = item.rsvp_count || 0;
+                  const seatsLeft = cap === null || cap === undefined ? null : cap - count;
+                  const isFull = seatsLeft !== null && seatsLeft <= 0;
+                  return (
+                    <div style={{ marginTop: '10px' }}>
+                      <p style={{ margin: '5px 0', fontSize: '0.9rem', color: '#555' }}>
+                        {cap === null || cap === undefined
+                          ? `${count} RSVPed`
+                          : `${count} / ${cap} RSVPed${isFull ? ' — Full' : ` (${seatsLeft} left)`}`}
+                      </p>
+                      {item.user_has_rsvped ? (
+                        <button onClick={() => handleCancelRsvp(item.opp_id)} style={{ width: '100%', backgroundColor: '#e67e22', color: 'white', padding: '8px', border: 'none', borderRadius: '4px' }}>Cancel RSVP</button>
+                      ) : (
+                        <button onClick={() => handleRsvp(item.opp_id)} disabled={isFull} style={{ width: '100%', backgroundColor: isFull ? '#bbb' : '#2774AE', color: 'white', padding: '8px', border: 'none', borderRadius: '4px', cursor: isFull ? 'not-allowed' : 'pointer' }}>{isFull ? 'Full' : 'RSVP'}</button>
+                      )}
+                    </div>
+                  );
+                })()}
                 <button onClick={async () => {
                   try {
                       await axios.post('http://localhost:5001/api/saved', {
