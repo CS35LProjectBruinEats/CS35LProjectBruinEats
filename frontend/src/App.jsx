@@ -42,9 +42,9 @@ function App() {
 
   // Food Data State
   const [foodItems, setFoodItems] = useState([]);
-  const [foodData, setFoodData] = useState({ 
-    name: '', description: '', date: '', cost: '', mealPeriod: 'Lunch', 
-    locationName: CAMPUS_LOCATIONS[0].name 
+  const [foodData, setFoodData] = useState({
+    name: '', description: '', date: '', cost: '', mealPeriod: 'Lunch',
+    locationName: CAMPUS_LOCATIONS[0].name, rsvpCapacity: ''
   });
   
   // UI State
@@ -112,7 +112,7 @@ function App() {
         await axios.post('http://localhost:5001/api/food-opportunities', { ...foodData, username: currentUsername });
       }
       setEditingId(null);
-      setFoodData({ name: '', description: '', date: '', cost: '', mealPeriod: 'Lunch', locationName: CAMPUS_LOCATIONS[0].name });
+      setFoodData({ name: '', description: '', date: '', cost: '', mealPeriod: 'Lunch', locationName: CAMPUS_LOCATIONS[0].name, rsvpCapacity: '' });
       fetchFood();
       setMessage("Saved successfully!");
     } catch (error) { setMessage('Operation failed'); }
@@ -123,10 +123,11 @@ function App() {
     setFoodData({
       name: item.opp_name,
       description: item.opp_description,
-      date: item.opp_date.split('T')[0], 
+      date: item.opp_date.split('T')[0],
       cost: item.cost,
       mealPeriod: item.meal_period_name,
-      locationName: item.location_name || CAMPUS_LOCATIONS[0].name
+      locationName: item.location_name || CAMPUS_LOCATIONS[0].name,
+      rsvpCapacity: item.rsvp_capacity ?? ''
     });
   };
 
@@ -179,6 +180,7 @@ function App() {
                 <select value={foodData.mealPeriod} onChange={(e) => setFoodData({...foodData, mealPeriod: e.target.value})} style={{ padding: '8px' }}>
                   <option value="Breakfast">Breakfast</option><option value="Lunch">Lunch</option><option value="Dinner">Dinner</option>
                 </select>
+                <input type="number" min="1" placeholder="RSVP capacity (leave blank for unlimited)" value={foodData.rsvpCapacity} onChange={(e) => setFoodData({...foodData, rsvpCapacity: e.target.value})} style={{ display: 'block', margin: '10px auto', padding: '8px', width: '85%' }} />
                 <div style={{ marginTop: '15px' }}>
                     <button type="submit" style={{ backgroundColor: '#4CAF50', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '4px' }}>{editingId ? "Update Post" : "Post Food"}</button>
                     {editingId && <button type="button" onClick={() => setEditingId(null)} style={{ marginLeft: '10px' }}>Cancel</button>}
