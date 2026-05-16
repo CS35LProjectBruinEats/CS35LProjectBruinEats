@@ -2,10 +2,11 @@
 
 A platform where UCLA students, clubs, and food vendors can post and discover free or discounted food on campus.
 
-This branch implements User Stories 1–3:
+This branch implements User Stories 1–3 and 5:
 1. Account creation (UCLA student or food vendor)
 2. Login
 3. Posting food opportunities (location, time, what's served, cost, hosting org)
+5. Editing opportunities you posted
 
 ## Prerequisites
 
@@ -67,12 +68,13 @@ Open the URL Vite prints (typically http://localhost:5173).
 
 ## API
 
-| Method | Path                  | Auth      | Purpose                          |
-| ------ | --------------------- | --------- | -------------------------------- |
-| POST   | `/api/signup`         | —         | Create account; returns JWT      |
-| POST   | `/api/login`          | —         | Authenticate; returns JWT        |
-| GET    | `/api/opportunities`  | —         | List all food opportunities      |
-| POST   | `/api/opportunities`  | Bearer    | Post a new food opportunity      |
+| Method | Path                       | Auth            | Purpose                                          |
+| ------ | -------------------------- | --------------- | ------------------------------------------------ |
+| POST   | `/api/signup`              | —               | Create account; returns JWT                      |
+| POST   | `/api/login`               | —               | Authenticate; returns JWT                        |
+| GET    | `/api/opportunities`       | —               | List all food opportunities                      |
+| POST   | `/api/opportunities`       | Bearer (vendor) | Post a new food opportunity                      |
+| PUT    | `/api/opportunities/:id`   | Bearer (vendor) | Edit an opportunity (owner only; 403 otherwise)  |
 
 Authenticated requests use `Authorization: Bearer <jwt>`. The frontend's axios instance attaches it automatically from `localStorage`.
 
