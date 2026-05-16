@@ -17,6 +17,7 @@ export default function App() {
     const [user, setUser] = useState(loadStoredUser);
     const [refreshKey, setRefreshKey] = useState(0);
     const [statusMessage, setStatusMessage] = useState('');
+    const [editing, setEditing] = useState(null);
 
     const handleAuthSuccess = ({ token, user: nextUser, message }) => {
         localStorage.setItem('token', token);
@@ -29,12 +30,23 @@ export default function App() {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setUser(null);
+        setEditing(null);
         setStatusMessage('Logged out.');
     };
 
-    const handleOpportunityCreated = () => {
+    const handleSaved = (_opportunity, { isEdit } = {}) => {
         setRefreshKey((k) => k + 1);
-        setStatusMessage('Opportunity posted!');
+        setEditing(null);
+        setStatusMessage(isEdit ? 'Opportunity updated!' : 'Opportunity posted!');
+    };
+
+    const handleEdit = (opportunity) => {
+        setEditing(opportunity);
+        setStatusMessage('');
+    };
+
+    const handleCancelEdit = () => {
+        setEditing(null);
     };
 
     useEffect(() => {
@@ -65,13 +77,27 @@ export default function App() {
             {!user ? (
                 <AuthForm onAuthSuccess={handleAuthSuccess} />
             ) : (
-                <main className="dashboard">
-                    <section className="post-section">
-                        <OpportunityForm onCreated={handleOpportunityCreated} />
-                    </section>
+                <main
+                    className={`dashboard${user.role === 'vendor' ? '' : ' dashboard--single'}`}
+                >
+                    {user.role === 'vendor' && (
+                        <section className="post-section">
+                            <OpportunityForm
+                                key={editing?.id ?? 'new'}
+                                opportunity={editing}
+                                onSaved={handleSaved}
+                                onCancel={handleCancelEdit}
+                            />
+                        </section>
+                    )}
                     <section className="browse-section">
                         <h2>All opportunities</h2>
-                        <OpportunityList refreshKey={refreshKey} />
+                        <OpportunityList
+                            refreshKey={refreshKey}
+                            currentUserId={user.role === 'vendor' ? user.id : null}
+                            editingId={editing?.id ?? null}
+                            onEdit={handleEdit}
+                        />
                     </section>
                 </main>
             )}
