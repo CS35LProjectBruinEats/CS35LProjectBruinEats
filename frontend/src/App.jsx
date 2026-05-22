@@ -303,8 +303,18 @@ function App() {
                 <p>No opportunities saved yet.</p>
               ) : (
                 savedItems.map(item => (
-                  <div key={item.opp_id} style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
-                    <strong>{item.opp_name}</strong> — {item.meal_period_name} — ${item.cost}  — 📅 {item.opp_date ? item.opp_date.split('T')[0] : 'No date'}
+                  <div key={item.opp_id} style={{ padding: '10px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span><strong>{item.opp_name}</strong> — {item.meal_period_name} — ${item.cost} — 📅 {item.opp_date ? item.opp_date.split('T')[0] : 'No date'}</span>
+                    <button onClick={async () => {
+                        try {
+                            await axios.delete('http://localhost:5001/api/saved', {
+                                data: { username: localStorage.getItem('currentUser'), opp_id: item.opp_id }
+                            });
+                            fetchSaved();
+                        } catch (err) {
+                            setMessage('Failed to remove');
+                        }
+                    }} style={{ color: 'red' }}>Remove</button>
                   </div>
                 ))
               )}

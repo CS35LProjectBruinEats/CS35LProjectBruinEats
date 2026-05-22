@@ -155,6 +155,21 @@ app.post('/api/saved', async (req, res) => {
     }
 });
 
+//Remove an opportunity from schedule
+app.delete('/api/saved', async (req, res) => {
+    const { username, opp_id } = req.body;
+    try {
+        const user = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
+        await pool.query(
+            'DELETE FROM saved_opportunities WHERE user_id = $1 AND opp_id = $2',
+            [user.rows[0].user_id, opp_id]
+        );
+        res.json({ message: 'Deleted from schedule' });
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+});
+
 // Get saved opportunities for a user
 app.get('/api/saved', async (req, res) => {
     const { username } = req.query;
