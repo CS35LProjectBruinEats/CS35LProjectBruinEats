@@ -248,6 +248,7 @@ function App() {
               <div key={item.opp_id} style={{ background: 'white', padding: '15px', borderRadius: '8px', textAlign: 'left', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ color: '#0073e6', margin: '0' }}>{item.opp_name}</h3>
                 <p style={{ margin: '5px 0' }}>📍 {item.location_name}</p>
+                <p style={{ margin: '5px 0' }}>📅 {item.opp_date ? item.opp_date.split('T')[0] : 'No date'}</p>
                 <p style={{ color: '#666', fontSize: '0.9rem' }}>{item.opp_description}</p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
                     <span>{item.meal_period_name}</span>
@@ -303,7 +304,7 @@ function App() {
               ) : (
                 savedItems.map(item => (
                   <div key={item.opp_id} style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
-                    <strong>{item.opp_name}</strong> — {item.meal_period_name} — ${item.cost}
+                    <strong>{item.opp_name}</strong> — {item.meal_period_name} — ${item.cost}  — 📅 {item.opp_date ? item.opp_date.split('T')[0] : 'No date'}
                   </div>
                 ))
               )}
