@@ -49,6 +49,7 @@ function App() {
 
   // Comments State (story 11)
   const [comments, setComments] = useState([]);
+  const [commentDrafts, setCommentDrafts] = useState({});
 
   // UI State
   const [editingId, setEditingId] = useState(null);
@@ -83,6 +84,26 @@ function App() {
       const response = await axios.get('http://localhost:5001/api/comments');
       setComments(response.data);
     } catch (error) { console.error("Error fetching comments:", error); }
+  };
+
+  const handlePostComment = async (oppId) => {
+    const text = commentDrafts[oppId] || '';
+    if (text.trim() === '') {
+      setMessage('Comment is empty');
+      return;
+    }
+    try {
+      await axios.post('http://localhost:5001/api/comments', {
+        username: localStorage.getItem('currentUser'),
+        opp_id: oppId,
+        text
+      });
+      setCommentDrafts({ ...commentDrafts, [oppId]: '' });
+      setMessage('Comment posted!');
+      fetchComments();
+    } catch (err) {
+      setMessage(err.response?.data?.error || 'Failed to post comment');
+    }
   };
 
   useEffect(() => { if (token) { fetchFood(); fetchSaved(); fetchComments(); } }, [token, mealFilter, costFilter]);
@@ -317,6 +338,16 @@ function App() {
                       </p>
                     ))
                   )}
+                  <div style={{ display: 'flex', gap: '5px', marginTop: '6px' }}>
+                    <input
+                      type="text"
+                      placeholder="Add a comment..."
+                      value={commentDrafts[item.opp_id] || ''}
+                      onChange={(e) => setCommentDrafts({ ...commentDrafts, [item.opp_id]: e.target.value })}
+                      style={{ flex: 1, padding: '6px', fontSize: '0.85rem' }}
+                    />
+                    <button onClick={() => handlePostComment(item.opp_id)} style={{ padding: '6px 10px', fontSize: '0.85rem' }}>Post</button>
+                  </div>
                 </div>
               </div>
             ))}
