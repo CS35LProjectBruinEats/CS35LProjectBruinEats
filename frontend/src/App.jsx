@@ -55,7 +55,7 @@ function App() {
   const jumpToElement = (id) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      element.scrollIntoView({ behavior: 'smooth'});
     }
   }
 
@@ -302,8 +302,9 @@ function App() {
                           username: localStorage.getItem('currentUser'),
                           opp_id: item.opp_id
                       });
-                      setMessage('Saved to your schedule!');
+                      
                       fetchSaved();
+                      setMessage('Saved to your schedule!');
                   } catch (err) {
                       setMessage(err.response?.data?.error || 'Failed to save');
                   }
