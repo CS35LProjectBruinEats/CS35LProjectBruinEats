@@ -38,7 +38,6 @@ function App() {
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [userRole, setUserRole] = useState(localStorage.getItem('userRole') || '');
   const [savedItems, setSavedItems] = useState([]);
-  const [showSchedule, setShowSchedule] = useState(false);
 
   // Food Data State
   const [foodItems, setFoodItems] = useState([]);
