@@ -52,6 +52,7 @@ function App() {
   const [mealFilter, setMealFilter] = useState('All');
   const [costFilter, setCostFilter] = useState('');
 
+  //updates food opportunities and applies filters
   const fetchFood = async () => {
     try {
       const response = await axios.get('http://localhost:5001/api/food-opportunities', {
@@ -65,7 +66,7 @@ function App() {
     } catch (error) { console.error("Error fetching food:", error); }
   };
 
-    //user's saved opportunities
+  //updates user's schedule (saved opportunities)
   const fetchSaved = async () => {
     try {
         const response = await axios.get('http://localhost:5001/api/saved', {
@@ -201,7 +202,7 @@ function App() {
               <h3>{editingId ? "Edit" : "Post"} Food Opportunity</h3>
               <form onSubmit={handleSaveFood}>
                 <input type="text" placeholder="Name" value={foodData.name} required onChange={(e) => setFoodData({...foodData, name: e.target.value})} style={{ margin: '5px', padding: '8px', width: '40%' }} />
-                <input type="number" min="0" placeholder="Cost" value={foodData.cost} required onChange={(e) => setFoodData({...foodData, cost: e.target.value})} style={{ margin: '5px', padding: '8px', width: '40%' }} />
+                <input type="number" min="0" step = "any" placeholder="Cost" value={foodData.cost} required onChange={(e) => setFoodData({...foodData, cost: e.target.value})} style={{ margin: '5px', padding: '8px', width: '40%' }} />
                 <select value={foodData.locationName} onChange={(e) => setFoodData({...foodData, locationName: e.target.value})} style={{ margin: '5px', padding: '8px', width: '85%' }}>
                     {CAMPUS_LOCATIONS.map(loc => <option key={loc.name} value={loc.name}>{loc.name}</option>)}
                 </select>
