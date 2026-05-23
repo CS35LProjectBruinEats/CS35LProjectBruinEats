@@ -46,7 +46,10 @@ function App() {
     name: '', description: '', date: '', cost: '', mealPeriod: 'Lunch',
     locationName: CAMPUS_LOCATIONS[0].name, rsvpCapacity: ''
   });
-  
+
+  // Comments State (story 11)
+  const [comments, setComments] = useState([]);
+
   // UI State
   const [editingId, setEditingId] = useState(null);
   const [mealFilter, setMealFilter] = useState('All');
@@ -75,7 +78,14 @@ function App() {
     } catch (error) { console.error("Error fetching saved:", error); }
   };
 
-  useEffect(() => { if (token) { fetchFood(); fetchSaved(); } }, [token, mealFilter, costFilter]);
+  const fetchComments = async () => {
+    try {
+      const response = await axios.get('http://localhost:5001/api/comments');
+      setComments(response.data);
+    } catch (error) { console.error("Error fetching comments:", error); }
+  };
+
+  useEffect(() => { if (token) { fetchFood(); fetchSaved(); fetchComments(); } }, [token, mealFilter, costFilter]);
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -294,6 +304,20 @@ function App() {
                       setMessage(err.response?.data?.error || 'Failed to save');
                   }
                 }} style={{ marginTop: '10px', width: '100%' }}>Save to Schedule</button>
+
+                {/* Comments (story 11) */}
+                <div style={{ marginTop: '12px', borderTop: '1px solid #eee', paddingTop: '8px' }}>
+                  <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', fontSize: '0.9rem' }}>Comments</p>
+                  {comments.filter(c => c.opp_id === item.opp_id).length === 0 ? (
+                    <p style={{ margin: '0 0 6px 0', fontSize: '0.85rem', color: '#888' }}>No comments yet.</p>
+                  ) : (
+                    comments.filter(c => c.opp_id === item.opp_id).map(c => (
+                      <p key={c.comment_id} style={{ margin: '4px 0', fontSize: '0.85rem' }}>
+                        <strong>{c.username}:</strong> {c.comment_text}
+                      </p>
+                    ))
+                  )}
+                </div>
               </div>
             ))}
           </div>
