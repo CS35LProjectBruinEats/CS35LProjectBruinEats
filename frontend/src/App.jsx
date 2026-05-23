@@ -46,7 +46,12 @@ function App() {
     name: '', description: '', date: '', cost: '', mealPeriod: 'Lunch',
     locationName: CAMPUS_LOCATIONS[0].name, rsvpCapacity: ''
   });
-  
+
+  // Comments State (story 11)
+  const [comments, setComments] = useState([]);
+  const [commentDrafts, setCommentDrafts] = useState({});
+  const [commentErrors, setCommentErrors] = useState({});
+
   // UI State
   const [editingId, setEditingId] = useState(null);
   const [mealFilter, setMealFilter] = useState('All');
@@ -90,7 +95,34 @@ function App() {
     } catch (error) { console.error("Error fetching saved:", error); }
   };
 
-  useEffect(() => { if (token) { fetchFood(); fetchSaved(); } }, [token, mealFilter, costFilter]);
+  const fetchComments = async () => {
+    try {
+      const response = await axios.get('http://localhost:5001/api/comments');
+      setComments(response.data);
+    } catch (error) { console.error("Error fetching comments:", error); }
+  };
+
+  const handlePostComment = async (oppId) => {
+    const text = commentDrafts[oppId] || '';
+    if (text.trim() === '') {
+      setCommentErrors({ ...commentErrors, [oppId]: 'Comment is empty' });
+      return;
+    }
+    try {
+      await axios.post('http://localhost:5001/api/comments', {
+        username: localStorage.getItem('currentUser'),
+        opp_id: oppId,
+        text
+      });
+      setCommentDrafts({ ...commentDrafts, [oppId]: '' });
+      setCommentErrors({ ...commentErrors, [oppId]: '' });
+      fetchComments();
+    } catch (err) {
+      setCommentErrors({ ...commentErrors, [oppId]: err.response?.data?.error || 'Failed to post comment' });
+    }
+  };
+
+  useEffect(() => { if (token) { fetchFood(); fetchSaved(); fetchComments(); } }, [token, mealFilter, costFilter]);
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -309,6 +341,33 @@ function App() {
                       setMessage(err.response?.data?.error || 'Failed to save');
                   }
                 }} style={{ marginTop: '10px', width: '100%', backgroundColor: '#15803D', color: 'white', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer'  }}>Save to Schedule</button>
+
+                {/* Comments (story 11) */}
+                <div style={{ marginTop: '12px', borderTop: '1px solid #eee', paddingTop: '8px' }}>
+                  <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', fontSize: '0.9rem' }}>Comments</p>
+                  {comments.filter(c => c.opp_id === item.opp_id).length === 0 ? (
+                    <p style={{ margin: '0 0 6px 0', fontSize: '0.85rem', color: '#888' }}>No comments yet.</p>
+                  ) : (
+                    comments.filter(c => c.opp_id === item.opp_id).map(c => (
+                      <p key={c.comment_id} style={{ margin: '4px 0', fontSize: '0.85rem' }}>
+                        <strong>{c.username}:</strong> {c.comment_text}
+                      </p>
+                    ))
+                  )}
+                  <div style={{ display: 'flex', gap: '5px', marginTop: '6px' }}>
+                    <input
+                      type="text"
+                      placeholder="Add a comment..."
+                      value={commentDrafts[item.opp_id] || ''}
+                      onChange={(e) => setCommentDrafts({ ...commentDrafts, [item.opp_id]: e.target.value })}
+                      style={{ flex: 1, padding: '6px', fontSize: '0.85rem' }}
+                    />
+                    <button onClick={() => handlePostComment(item.opp_id)} style={{ padding: '6px 10px', fontSize: '0.85rem' }}>Post</button>
+                  </div>
+                  {commentErrors[item.opp_id] && (
+                    <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'red' }}>{commentErrors[item.opp_id]}</p>
+                  )}
+                </div>
               </div>
             ))}
           </div>

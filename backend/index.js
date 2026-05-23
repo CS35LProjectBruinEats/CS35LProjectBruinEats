@@ -241,5 +241,40 @@ app.delete('/api/rsvp', async (req, res) => {
     }
 });
 
+// --- COMMENTS (story 11) ---
+
+app.get('/api/comments', async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT c.comment_id, c.opp_id, c.comment_text, c.created_at, u.username
+             FROM comments c
+             JOIN users u ON c.user_id = u.user_id
+             ORDER BY c.created_at ASC`
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/comments', async (req, res) => {
+    const { username, opp_id, text } = req.body;
+    if (!text || text.trim() === '') {
+        return res.status(400).json({ error: 'Comment is empty' });
+    }
+    try {
+        const user = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
+        if (user.rows.length === 0) return res.status(400).json({ error: 'User not found' });
+        const inserted = await pool.query(
+            `INSERT INTO comments (user_id, opp_id, comment_text) VALUES ($1, $2, $3)
+             RETURNING comment_id, opp_id, comment_text, created_at`,
+            [user.rows[0].user_id, opp_id, text.trim()]
+        );
+        res.status(201).json({ ...inserted.rows[0], username });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
