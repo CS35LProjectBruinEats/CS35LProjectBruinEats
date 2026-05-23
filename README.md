@@ -25,8 +25,6 @@ Also install Postgres. Everything in the installer should be left as default, li
  ```sql
 CREATE DATABASE foodopp_db;
 ```
-3.  Connect to the database: 
-   \c foodopp_db
 
 4. Create the users table
  ```sql
@@ -44,12 +42,25 @@ CREATE TABLE foodopps (
     cost DECIMAL(10, 2) NOT NULL,
     meal_period_name VARCHAR(50),
     creator_user_id INT,
+    location_name VARCHAR(100),
+    rsvp_capacity INT,
     FOREIGN KEY (creator_user_id) REFERENCES users(user_id)
+);
+CREATE TABLE saved_opportunities (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    opp_id INT REFERENCES foodopps(opp_id) ON DELETE CASCADE,
+    UNIQUE(user_id, opp_id)
+);
+CREATE TABLE rsvps (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    opp_id INT REFERENCES foodopps(opp_id) ON DELETE CASCADE,
+    UNIQUE(user_id, opp_id)
 );
 ```
 
 5. Exit: Type \q and hit Enter.
-
 
 
 ### 4. Frontend Initialization
@@ -57,6 +68,7 @@ CREATE TABLE foodopps (
 1. Open a new terminal window and navigate to the frontend directory: cd ../frontend
 2. Install dependencies: npm install
 3. Install package to concurrently run frontend and backend: npm install npm-run-all --save-dev
+4. Install package for map: npm install react-leaflet leaflet
 
 
 ### 5. Running the Application
@@ -66,5 +78,3 @@ CREATE TABLE foodopps (
 ### 6. Testing
 1. Signup: Create a new account on the registration page.
 2. Login: Log in with the credentials you just created.
-
-
