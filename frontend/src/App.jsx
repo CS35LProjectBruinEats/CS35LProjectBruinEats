@@ -50,6 +50,7 @@ function App() {
   // Comments State (story 11)
   const [comments, setComments] = useState([]);
   const [commentDrafts, setCommentDrafts] = useState({});
+  const [commentErrors, setCommentErrors] = useState({});
 
   // UI State
   const [editingId, setEditingId] = useState(null);
@@ -89,7 +90,7 @@ function App() {
   const handlePostComment = async (oppId) => {
     const text = commentDrafts[oppId] || '';
     if (text.trim() === '') {
-      setMessage('Comment is empty');
+      setCommentErrors({ ...commentErrors, [oppId]: 'Comment is empty' });
       return;
     }
     try {
@@ -99,10 +100,10 @@ function App() {
         text
       });
       setCommentDrafts({ ...commentDrafts, [oppId]: '' });
-      setMessage('Comment posted!');
+      setCommentErrors({ ...commentErrors, [oppId]: '' });
       fetchComments();
     } catch (err) {
-      setMessage(err.response?.data?.error || 'Failed to post comment');
+      setCommentErrors({ ...commentErrors, [oppId]: err.response?.data?.error || 'Failed to post comment' });
     }
   };
 
@@ -348,6 +349,9 @@ function App() {
                     />
                     <button onClick={() => handlePostComment(item.opp_id)} style={{ padding: '6px 10px', fontSize: '0.85rem' }}>Post</button>
                   </div>
+                  {commentErrors[item.opp_id] && (
+                    <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'red' }}>{commentErrors[item.opp_id]}</p>
+                  )}
                 </div>
               </div>
             ))}
