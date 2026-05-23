@@ -16,8 +16,8 @@ psql -U postgres
 ```sql
 CREATE TABLE saved_opportunities (
     id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id),
-    opp_id INT REFERENCES foodopps(opp_id),
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    opp_id INT REFERENCES foodopps(opp_id) ON DELETE CASCADE,
     UNIQUE(user_id, opp_id)
 );
 ```

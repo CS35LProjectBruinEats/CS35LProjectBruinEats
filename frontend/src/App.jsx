@@ -140,6 +140,7 @@ function App() {
       try {
         await axios.delete(`http://localhost:5001/api/food-opportunities/${id}`);
         fetchFood();
+        fetchSaved();
       } catch (error) { setMessage("Failed to delete."); }
     }
   };
