@@ -34,3 +34,15 @@ CREATE TABLE rsvps (
     UNIQUE(user_id, opp_id)
 );
 ```
+
+For comments (story 11), add a comments table:
+
+```sql
+CREATE TABLE comments (
+    comment_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    opp_id INT REFERENCES foodopps(opp_id) ON DELETE CASCADE,
+    comment_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+```
