@@ -201,7 +201,7 @@ function App() {
               <h3>{editingId ? "Edit" : "Post"} Food Opportunity</h3>
               <form onSubmit={handleSaveFood}>
                 <input type="text" placeholder="Name" value={foodData.name} required onChange={(e) => setFoodData({...foodData, name: e.target.value})} style={{ margin: '5px', padding: '8px', width: '40%' }} />
-                <input type="number" placeholder="Cost" value={foodData.cost} required onChange={(e) => setFoodData({...foodData, cost: e.target.value})} style={{ margin: '5px', padding: '8px', width: '40%' }} />
+                <input type="number" min="0" placeholder="Cost" value={foodData.cost} required onChange={(e) => setFoodData({...foodData, cost: e.target.value})} style={{ margin: '5px', padding: '8px', width: '40%' }} />
                 <select value={foodData.locationName} onChange={(e) => setFoodData({...foodData, locationName: e.target.value})} style={{ margin: '5px', padding: '8px', width: '85%' }}>
                     {CAMPUS_LOCATIONS.map(loc => <option key={loc.name} value={loc.name}>{loc.name}</option>)}
                 </select>
