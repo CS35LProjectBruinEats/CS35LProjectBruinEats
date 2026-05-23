@@ -52,6 +52,20 @@ function App() {
   const [mealFilter, setMealFilter] = useState('All');
   const [costFilter, setCostFilter] = useState('');
 
+  const jumpToElement = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  /*
+  const setAndJumpToMessage = (msg) => {
+    setMessage(msg);
+    jumpToElement("msg");
+  }
+  */
+
   //updates food opportunities and applies filters
   const fetchFood = async () => {
     try {
@@ -171,8 +185,6 @@ function App() {
     }
   };
 
-
-
   return (
     <div style={{ padding: '30px', textAlign: 'center', fontFamily: 'Arial', backgroundColor: '#f4f7f6', minHeight: '100vh' }}>
       <h1><span style={{ color: '#2774AE' }}>Bruin</span><span style={{ color: '#FFD100' }}>Eats</span></h1>
@@ -199,7 +211,7 @@ function App() {
 
           {userRole === 'vendor' && (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', marginBottom: '30px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-              <h3>{editingId ? "Edit" : "Post"} Food Opportunity</h3>
+              <h3 id="post_edit_foodopp">{editingId ? "Edit" : "Post"} Food Opportunity</h3>
               <form onSubmit={handleSaveFood}>
                 <input type="text" placeholder="Name" value={foodData.name} required onChange={(e) => setFoodData({...foodData, name: e.target.value})} style={{ margin: '5px', padding: '8px', width: '40%' }} />
                 <input type="number" min="0" step = "any" placeholder="Cost" value={foodData.cost} required onChange={(e) => setFoodData({...foodData, cost: e.target.value})} style={{ margin: '5px', padding: '8px', width: '40%' }} />
@@ -259,8 +271,8 @@ function App() {
                 {/* ownership check */}
                 {localStorage.getItem('currentUser') === item.creator_username && (
                   <div style={{ marginTop: '10px', display: 'flex', gap: '5px' }}>
-                    <button onClick={() => startEdit(item)} style={{ flex: 1 }}>Edit</button>
-                    <button onClick={() => handleDelete(item.opp_id)} style={{ flex: 1, color: 'red' }}>Delete</button>
+                    <button onClick={() => {startEdit(item); jumpToElement("post_edit_foodopp")}} style={{ flex: 1, width: '100%', backgroundColor: 'grey', color: 'white', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Edit</button>
+                    <button onClick={() => handleDelete(item.opp_id)} style={{ flex: 1, color: 'white', width: '100%', backgroundColor: '#D32F2F', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
                   </div>
                 )}
                 {/* RSVP block (story 10) */}
@@ -277,7 +289,7 @@ function App() {
                           : `${count} / ${cap} RSVPed${isFull ? ' — Full' : ` (${seatsLeft} left)`}`}
                       </p>
                       {item.user_has_rsvped ? (
-                        <button onClick={() => handleCancelRsvp(item.opp_id)} style={{ width: '100%', backgroundColor: '#e67e22', color: 'white', padding: '8px', border: 'none', borderRadius: '4px' }}>Cancel RSVP</button>
+                        <button onClick={() => handleCancelRsvp(item.opp_id)} style={{ width: '100%', backgroundColor: '#e67e22', color: 'white', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Cancel RSVP</button>
                       ) : (
                         <button onClick={() => handleRsvp(item.opp_id)} disabled={isFull} style={{ width: '100%', backgroundColor: isFull ? '#bbb' : '#2774AE', color: 'white', padding: '8px', border: 'none', borderRadius: '4px', cursor: isFull ? 'not-allowed' : 'pointer' }}>{isFull ? 'Full' : 'RSVP'}</button>
                       )}
@@ -295,7 +307,7 @@ function App() {
                   } catch (err) {
                       setMessage(err.response?.data?.error || 'Failed to save');
                   }
-                }} style={{ marginTop: '10px', width: '100%' }}>Save to Schedule</button>
+                }} style={{ marginTop: '10px', width: '100%', backgroundColor: '#15803D', color: 'white', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer'  }}>Save to Schedule</button>
               </div>
             ))}
           </div>
@@ -316,14 +328,14 @@ function App() {
                         } catch (err) {
                             setMessage('Failed to remove');
                         }
-                    }} style={{ color: 'red' }}>Remove</button>
+                    }} style={{ color: 'white', backgroundColor: '#D32F2F', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Remove</button>
                   </div>
                 ))
               )}
             </div>
         </div>
       )}
-      {message && <p style={{ marginTop: '20px' }}><strong>{message}</strong></p>}
+      {message && <p style={{ marginTop: '20px' }} id="msg"><strong>{message}</strong></p>}
     </div>
   );
 }
