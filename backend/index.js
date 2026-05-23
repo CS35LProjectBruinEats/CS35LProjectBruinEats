@@ -238,5 +238,21 @@ app.delete('/api/rsvp', async (req, res) => {
     }
 });
 
+// --- COMMENTS (story 11) ---
+
+app.get('/api/comments', async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT c.comment_id, c.opp_id, c.comment_text, c.created_at, u.username
+             FROM comments c
+             JOIN users u ON c.user_id = u.user_id
+             ORDER BY c.created_at ASC`
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
