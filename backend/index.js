@@ -15,6 +15,9 @@ app.use(express.json());
 app.post('/api/signup', async (req, res) => {
     const { username, password, role } = req.body;
     try {
+        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        if (result.rows.length !== 0) return res.status(400).json({ error: "Username already taken." });
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         const newUser = await pool.query(
@@ -31,11 +34,11 @@ app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     try {
         const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-        if (result.rows.length === 0) return res.status(400).json({ error: "Invalid Credentials" });
+        if (result.rows.length === 0) return res.status(400).json({ error: "Invalid Username" });
 
         const user = result.rows[0];
         const isMatch = await bcrypt.compare(password, user.password_hash);
-        if (!isMatch) return res.status(400).json({ error: "Invalid Credentials" });
+        if (!isMatch) return res.status(400).json({ error: "Invalid Password" });
 
         const token = jwt.sign({ userId: user.user_id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
         
