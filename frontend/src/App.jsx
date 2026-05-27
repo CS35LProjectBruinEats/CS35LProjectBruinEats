@@ -191,6 +191,94 @@ function App() {
     }
   };
 
+  {/*
+    GenAI prompt: complete this handler function that is called when you click the "save to schedule" button.
+    const handleSaveSchedule = async (opp_id) => {
+    try {
+        await axios.post('http://localhost:5001/api/saved', {
+            //todo
+        });
+        setMessage('Saved to your schedule!');
+        fetchSaved();
+    } catch (err) {
+        //todo
+    }
+    };
+
+    GenAI response:
+    const handleSaveSchedule = async (opp_id) => {
+    try {
+        await axios.post('http://localhost:5001/api/saved', {
+            username: localStorage.getItem('currentUser'),
+            opp_id: opp_id
+        });
+        setMessage('Saved to your schedule!');
+        fetchSaved();
+    } catch (err) {
+        setMessage(err.response?.data?.error || 'Failed to save');
+    }
+    };
+
+    Reflection: 
+    the "username ..." line gets the current user so that the backend knows which user_id is saving the opportunity.
+    the "opp_id" line sends the id of the opporutnity being saved. Together, the backend can use these to make a pair to add to the database.
+    The error block uses chaining using ? to display the error message.
+    Overall, these features are exactly what this function needed to be complete, so I used them.
+    */}
+  const handleSaveSchedule = async (opp_id) => {
+    try {
+        await axios.post('http://localhost:5001/api/saved', {
+            username: localStorage.getItem('currentUser'),
+            opp_id: opp_id
+        });
+        setMessage('Saved to your schedule!');
+        fetchSaved();
+    } catch (err) {
+        setMessage(err.response?.data?.error || 'Failed to save');
+    }
+  };
+
+  {/*
+    GenAI prompt: complete this handler function that is called when you click the "remove" button to remove an opporutnity from personal schedule. 
+    const handleDeleteSchedule = async (opp_id) => {
+    try {
+        await axios.delete('http://localhost:5001/api/saved', {
+            //todo
+        });
+        fetchSaved();
+    } catch (err) {
+        setMessage('Failed to remove');
+    }
+    };
+
+    GenAI response:
+    const handleDeleteSchedule = async (opp_id) => {
+    try {
+        await axios.delete('http://localhost:5001/api/saved', {
+            data: { username: localStorage.getItem('currentUser'), opp_id: opp_id }
+        });
+        fetchSaved();
+    } catch (err) {
+        setMessage('Failed to remove');
+    }
+    };
+
+    Reflection: 
+    The AI added the request body to send to the bakcend for me, since I wasn't sure on the syntax for this.
+    It sends two components - the user who is deleting the opportunity, and the id of the opportunity being deleted, since these make up the pair that must be removed from the table in the database.
+    I still didn't understand why it has to be wrapped in "data: ", as the previous handle functions above that I was trying to go off of did not have this. Upon further research, I found that it is because delete requests are formatted a bit differently than post requests, which are what I was trying to go off of.
+    */}
+  const handleDeleteSchedule = async (opp_id) => {
+    try {
+        await axios.delete('http://localhost:5001/api/saved', {
+            data: { username: localStorage.getItem('currentUser'), opp_id: opp_id }
+        });
+        fetchSaved();
+    } catch (err) {
+        setMessage('Failed to remove');
+    }
+  };
+
   const handleRsvp = async (oppId) => {
     try {
       await axios.post('http://localhost:5001/api/rsvp', {
@@ -268,6 +356,35 @@ function App() {
             <MapContainer center={[34.0705, -118.4450]} zoom={14.5} minZoom={14.25} style={{ height: '100%', width: '100%' }}>              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               {foodItems.map((item) => {
                 const loc = CAMPUS_LOCATIONS.find(l => l.name === item.location_name);
+                {/* GenAI Prompt: we are having a glitch where when you edit a food opportunity, it disappears from the map. how can i fix this?
+                  GenAI response: 
+                  The issue is in the startEdit function. When you click edit, it sets editingId which causes a re-render, but the item disappears from the map because the location_name field isn't being matched correctly.
+                  Look at this line in startEdit:
+                  javascriptlocationName: item.location_name || CAMPUS_LOCATIONS[0].name
+                  The problem is that when you save with handleSaveFood, the updated item might not have location_name returned correctly from the backend, so after saving fetchFood() gets data where location_name is null, and the map filter:
+                  javascriptconst loc = CAMPUS_LOCATIONS.find(l => l.name === item.location_name);
+                  return loc ? (...)  : null;
+                  returns null and hides the marker.
+                  The fix is to make the map show items even while being edited by excluding the editing item from the disappearing logic:
+                  javascript{foodItems.map((item) => {
+                    const loc = CAMPUS_LOCATIONS.find(l => l.name === item.location_name);
+                    const isEditing = editingId === item.opp_id;
+                    const locationToUse = isEditing 
+                      ? CAMPUS_LOCATIONS.find(l => l.name === foodData.locationName) 
+                      : loc;
+                    return locationToUse ? (
+                      <Marker key={item.opp_id} position={[locationToUse.lat, locationToUse.lng]}>
+                        <Popup><strong>{item.opp_name}</strong><br />{item.meal_period_name} - ${item.cost}</Popup>
+                      </Marker>
+                    ) : null;
+                  })}
+                  This way while editing, it uses the current foodData.locationName from the form instead of the stale data.
+
+                  Reflection: 
+                  I didn't realize that the item is disappearing from the map because clicking the edit button re-renders the map and hides the item that has been editing in this re-render.
+                  The AI's proposed solution is to check whether the location is/has been edited through the const locationToUse. If an edit has been made, then this const is assigned to the location that is being used in the edit form. If not, then the original logic is preserved.
+                  After thinking about it further, I decided that this is the best way to proceed since it is the simplest solution I could think of, as it preserves the original logic when edits have not been applied. Adding one new const is probably the minimal change that can be made to factor in the locations of food opportunities that have been edited.
+                */}
                 const isEditing = editingId === item.opp_id;
                 const locationToUse = isEditing 
                   ? CAMPUS_LOCATIONS.find(l => l.name === foodData.locationName) 
@@ -327,19 +444,7 @@ function App() {
                     </div>
                   );
                 })()}
-                <button onClick={async () => {
-                  try {
-                      await axios.post('http://localhost:5001/api/saved', {
-                          username: localStorage.getItem('currentUser'),
-                          opp_id: item.opp_id
-                      });
-                      
-                      fetchSaved();
-                      setMessage('Saved to your schedule!');
-                  } catch (err) {
-                      setMessage(err.response?.data?.error || 'Failed to save');
-                  }
-                }} style={{ marginTop: '10px', width: '100%', backgroundColor: '#15803D', color: 'white', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer'  }}>Save to Schedule</button>
+                <button onClick={() => handleSaveSchedule(item.opp_id)} style={{ marginTop: '10px', width: '100%', backgroundColor: '#15803D', color: 'white', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer'  }}>Save to Schedule</button>
 
                 {/* Comments (story 11) */}
                 <div style={{ marginTop: '12px', borderTop: '1px solid #eee', paddingTop: '8px' }}>
@@ -369,6 +474,49 @@ function App() {
                 </div>
               </div>
             ))}
+          {/* Personal schedule (story 9) */}
+          {/*
+          GenAI prompt: Complete this schedule section that I have started. I want it to be a list view that includes the opportunity name, the meal period, and the cost, all in one line:
+          </div>
+            <div style={{ marginTop: '30px', background: 'white', padding: '20px', borderRadius: '8px' }}>
+              <h3>My Schedule</h3>
+              {savedItems.length === 0 ? (
+                <p>No opportunities saved yet.</p>
+              ) : (
+                savedItems.map(item => (
+                
+          GenAI reponse: 
+          <div style={{ marginTop: '30px', background: 'white', padding: '20px', borderRadius: '8px' }}>
+              <h3>My Schedule</h3>
+              {savedItems.length === 0 ? (
+                  <p>No opportunities saved yet.</p>
+              ) : (
+                  savedItems.map(item => (
+                      <div key={item.opp_id} style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
+                          <strong>{item.opp_name}</strong> — {item.meal_period_name} — ${item.cost}
+                      </div>
+                  ))
+              )}
+          </div>  
+
+          Reflection:
+          I implemented the schedule title and the conditional logic to display it myself. But I wasn't sure how to display the different attributes in a single line, so I used AI for that part.
+          The AI's solution took care of the formatting for me, and it showed me how to separate each attribute. I liked this formatting and decided to use it.
+          */}
+          {/*
+          GenAI prompt: (in continuation to the one above): How do I also add the date? I tried this and it gave me a weird broken formatting:
+          <span><strong>{item.opp_name}</strong> — {item.meal_period_name} — ${item.cost} — {item.opp_date}</span>
+          The date formatting looked something like this:
+          2026-05-27T07:00:00.000Z
+
+          GenAI response: 
+          The weird format is because the database stores dates with a timestamp. Use .split('T')[0] to get just the date part:
+          <span><strong>{item.opp_name}</strong> — {item.meal_period_name} — ${item.cost} — 📅 {item.opp_date ? item.opp_date.split('T')[0] : 'No date'}</span>
+
+          Reflection:
+          This is essentially just a technicality on how the database stores dates. The AI gave me a solution on how to get just the first part in React syntax, which I decided to use. It also included a calender emoji which I thought was cute so I used that too.
+          */}
+          
           </div>
             <div style={{ marginTop: '30px', background: 'white', padding: '20px', borderRadius: '8px' }}>
               <h3>My Schedule</h3>
@@ -378,16 +526,7 @@ function App() {
                 savedItems.map(item => (
                   <div key={item.opp_id} style={{ padding: '10px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span><strong>{item.opp_name}</strong> — {item.meal_period_name} — ${item.cost} — 📅 {item.opp_date ? item.opp_date.split('T')[0] : 'No date'}</span>
-                    <button onClick={async () => {
-                        try {
-                            await axios.delete('http://localhost:5001/api/saved', {
-                                data: { username: localStorage.getItem('currentUser'), opp_id: item.opp_id }
-                            });
-                            fetchSaved();
-                        } catch (err) {
-                            setMessage('Failed to remove');
-                        }
-                    }} style={{ color: 'white', backgroundColor: '#D32F2F', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Remove</button>
+                    <button onClick={() => handleDeleteSchedule(item.opp_id)} style={{ color: 'white', backgroundColor: '#D32F2F', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Remove</button>
                   </div>
                 ))
               )}

@@ -143,6 +143,23 @@ app.delete('/api/food-opportunities/:id', async (req, res) => {
 
 // --- Save an opportunity to personal schedule (story 9) ---
 // Save an opportunity
+/*GenAI prompt: Write me a psql statement that can add a new row to the saved_opportunities table, which has the primary key id and two columns: user_id and opp_id.
+I also want to be able to catch the error of whether an item has already been saved (that user_id + opp_id pair is already in the table).
+app.post('/api/saved', async (req, res) => {
+    const { username, opp_id } = req.body;
+    try {
+        const user = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
+        await pool.query(
+            [todo]
+        );
+        res.json({ message: 'Saved!' });
+    } catch (err) {
+        [todo]
+        res.status(500).json({ error: err.message });
+    }
+});
+
+GenAI response:
 app.post('/api/saved', async (req, res) => {
     const { username, opp_id } = req.body;
     try {
@@ -154,7 +171,26 @@ app.post('/api/saved', async (req, res) => {
         res.json({ message: 'Saved!' });
     } catch (err) {
         if (err.code === '23505') return res.status(400).json({ error: 'Already saved' });
-        res.status(500).send('Server error');
+        res.status(500).json({ error: err.message });
+    }
+});
+
+Reflection: For the first todo, I was just using AI to bypass implementing the psql syntax myself, since it was explicitly stated in class that this is not a requirement for this class.
+For the second, the AI gave me the error code "23505". A quick google search told me that this is the psql error code for a unique_violation, which is what I needed. 
+Both of the solutions provided by the AI were exactly what I was looking for, so I decided to adopt both. 
+*/
+app.post('/api/saved', async (req, res) => {
+    const { username, opp_id } = req.body;
+    try {
+        const user = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
+        await pool.query(
+            'INSERT INTO saved_opportunities (user_id, opp_id) VALUES ($1, $2)',
+            [user.rows[0].user_id, opp_id]
+        );
+        res.json({ message: 'Saved!' });
+    } catch (err) {
+        if (err.code === '23505') return res.status(400).json({ error: 'Already saved' });
+        res.status(500).json({ error: err.message });
     }
 });
 
@@ -169,11 +205,25 @@ app.delete('/api/saved', async (req, res) => {
         );
         res.json({ message: 'Deleted from schedule' });
     } catch (err) {
-        res.status(500).send('Server error');
+        res.status(500).json({ error: err.message });
     }
 });
 
 // Get saved opportunities for a user
+/*GenAI prompt: Write me a psql statement that can get the saved opportunities for a user:
+app.get('/api/saved', async (req, res) => {
+    const { username } = req.query;
+    try {
+        const user = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
+        await pool.query(
+            [todo]
+        );
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+GenAI response:
 app.get('/api/saved', async (req, res) => {
     const { username } = req.query;
     try {
@@ -184,7 +234,27 @@ app.get('/api/saved', async (req, res) => {
         );
         res.json(result.rows);
     } catch (err) {
-        res.status(500).send('Server error');
+        res.status(500).json({ error: err.message });
+    }
+});
+The SQL joins foodopps and saved_opportunities together so you get the full food opportunity details (name, cost, date, etc.) rather than just the IDs.
+
+Reflection: 
+I was just using AI to bypass implementing the psql syntax myself, since it was explicitly stated in class that this is not a requirement for this class.
+I realized that my approach was slightly incorrect, as I had to save the result in a const so that I could actually display it.
+This AI response was exactly what I needed, so I decided to integrate it into my program.
+*/
+app.get('/api/saved', async (req, res) => {
+    const { username } = req.query;
+    try {
+        const user = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
+        const result = await pool.query(
+            'SELECT f.* FROM foodopps f JOIN saved_opportunities s ON f.opp_id = s.opp_id WHERE s.user_id = $1',
+            [user.rows[0].user_id]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
