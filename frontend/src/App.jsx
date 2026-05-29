@@ -496,7 +496,30 @@ function App() {
                     </div>
                   );
                 })()}
-                <button onClick={() => handleSaveSchedule(item.opp_id)} style={{ marginTop: '10px', width: '100%', backgroundColor: '#15803D', color: 'white', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer'  }}>Save to Schedule</button>
+
+                {/*
+                GenAI prompt: I want the "save to schedule" button to not be visible if the item is already saved. Instead, I want it to say "in schedule". Fill in this line for this:
+                {savedItems.filter(saved => saved.opp_id === item.opp_id).length > 0 ? (
+                    //todo
+                  ) : (
+                    <button onClick={() => handleSaveSchedule(item.opp_id)} style={{ marginTop: '10px', width: '100%', backgroundColor: '#15803D', color: 'white', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer'  }}>Save to Schedule</button>
+                )}
+
+                GenAI response: 
+                {savedItems.filter(saved => saved.opp_id === item.opp_id).length > 0 ? (
+                    <p style={{ marginTop: '10px', color: '#4CAF50', fontWeight: 'bold' }}>✓ In Schedule</p>
+                ) : (
+                    <button onClick={() => handleSaveSchedule(item.opp_id)} style={{ marginTop: '10px', width: '100%', backgroundColor: '#15803D', color: 'white', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Save to Schedule</button>
+                )}
+
+                Reflection: The AI did a good job generating a nice looking "In schedule" message. I implemented the filter logic myself and just used AI to make sure the "in schedule" option looks pretty.
+                
+                */}
+                {savedItems.filter(saved => saved.opp_id === item.opp_id).length > 0 ? (
+                    <p style={{ marginTop: '10px', color: '#4CAF50', fontWeight: 'bold' }}>✓ In Schedule</p>
+                  ) : (
+                    <button onClick={() => handleSaveSchedule(item.opp_id)} style={{ marginTop: '10px', width: '100%', backgroundColor: '#15803D', color: 'white', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer'  }}>Save to Schedule</button>
+                )}
 
                 {/* Comments (story 11) */}
                 <div style={{ marginTop: '12px', borderTop: '1px solid #eee', paddingTop: '8px' }}>
