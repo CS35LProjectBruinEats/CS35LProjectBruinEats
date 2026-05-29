@@ -83,6 +83,8 @@ app.get('/api/food-opportunities', async (req, res) => {
             query += ` AND f.cost <= $${params.length}`;
         }
 
+        query += ` ORDER BY f.opp_date ASC`;
+
         const result = await pool.query(query, params);
         res.json(result.rows);
     } catch (err) {
@@ -243,13 +245,14 @@ Reflection:
 I was just using AI to bypass implementing the psql syntax myself, since it was explicitly stated in class that this is not a requirement for this class.
 I realized that my approach was slightly incorrect, as I had to save the result in a const so that I could actually display it.
 This AI response was exactly what I needed, so I decided to integrate it into my program.
+I also later added "ORDER BY f.opp_date ASC" based on a google search so that the schedule is in chronological order.
 */
 app.get('/api/saved', async (req, res) => {
     const { username } = req.query;
     try {
         const user = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
         const result = await pool.query(
-            'SELECT f.* FROM foodopps f JOIN saved_opportunities s ON f.opp_id = s.opp_id WHERE s.user_id = $1',
+            'SELECT f.* FROM foodopps f JOIN saved_opportunities s ON f.opp_id = s.opp_id WHERE s.user_id = $1 ORDER BY f.opp_date ASC',
             [user.rows[0].user_id]
         );
         res.json(result.rows);
