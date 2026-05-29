@@ -304,6 +304,57 @@ function App() {
     }
   };
 
+  const getOffset = (index, loc) => {
+    const randDirection = Math.floor(Math.random() * (4));
+    let lat, lng;
+    const offset = 0.00018;
+
+    if(randDirection == 0) {
+      lat = loc.lat + (index * offset);
+      lng = loc.lng + (index * offset);
+    }
+    else if(randDirection == 1) {
+      lat = loc.lat - (index * offset);
+      lng = loc.lng + (index * offset);
+    }
+    else if(randDirection == 2) {
+      lat = loc.lat + (index * offset);
+      lng = loc.lng - (index * offset);
+    }
+    else if(randDirection == 3) {
+      lat = loc.lat - (index * offset);
+      lng = loc.lng - (index * offset);
+    }
+
+    return [lat, lng];
+  }
+
+  {/*
+    GenAI prompt: write me a helper function applyOffset that can slightly offset the latitude and longitude coordinates at a particular map location.
+    GenAI response:
+    const getOffsetPosition = (items, currentItem, loc) => {
+      const sameLocation = items.filter(i => i.location_name === currentItem.location_name);
+      const index = sameLocation.findIndex(i => i.opp_id === currentItem.opp_id);
+      const offset = 0.0002;
+      return [
+          loc.lat + (index * offset),
+          loc.lng + (index * offset)
+      ];
+    };
+
+    Reflection: This helper function uses a filter to get all the opportunities that are at the same location. Then, it increases the latitude and longitude by a small offset for each.
+    The overall logic for this was solid, except I didn't like that the only option was to increase lat and lng, so after a while the pin would be quite far away from the actual building on the map.
+    To work around this, I added a helper function getOffset (see above) that uses a random number generator to decide whether to increase or decrease the latitude and longitude. That way, the opportunities are better clustered around the actual building rather than stretching out linearly.
+    I also experimentally decreased offset to 0.00018 because I found this to be the best separation.
+    */}
+  const applyOffset = (items, currentItem, loc) => {
+    const sameLocation = items.filter(i => i.location_name === currentItem.location_name);
+    const index = sameLocation.findIndex(i => i.opp_id === currentItem.opp_id);
+    
+    const [lat, lng] = getOffset(index, loc);
+    return [lat, lng];
+  }
+
   return (
     <div style={{ padding: '30px', textAlign: 'center', fontFamily: 'Arial', backgroundColor: '#f4f7f6', minHeight: '100vh' }}>
       <h1><span style={{ color: '#2774AE' }}>Bruin</span><span style={{ color: '#FFD100' }}>Eats</span></h1>
@@ -389,8 +440,9 @@ function App() {
                 const locationToUse = isEditing 
                   ? CAMPUS_LOCATIONS.find(l => l.name === foodData.locationName) 
                   : loc;
+                const position = applyOffset(foodItems, item, locationToUse);
                 return locationToUse ? (
-                  <Marker key={item.opp_id} position={[locationToUse.lat, locationToUse.lng]}>
+                  <Marker key={item.opp_id} position={position}>
                     <Popup><strong>{item.opp_name}</strong><br />{item.meal_period_name} - ${item.cost}</Popup>
                   </Marker>
                 ) : null;
