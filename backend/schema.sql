@@ -1,8 +1,3 @@
--- Schema for the throwaway end-to-end test database (foodopp_test_db).
--- Mirrors the production schema of foodopp_db. Load once with:
---   createdb foodopp_test_db && psql foodopp_test_db -f tests/schema.sql
--- (or: npm run test:setup)
-
 CREATE TABLE users (
     user_id       SERIAL PRIMARY KEY,
     username      VARCHAR(50) NOT NULL UNIQUE,

@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "db:setup": "dotenv -e .env -- cross-env PGPASSWORD=$DB_PASSWORD createdb -U postgres foodopp_db && dotenv -e .env -- cross-env PGPASSWORD=$DB_PASSWORD psql -U postgres -d foodopp_db -f schema.sql",
     "test": "cross-env DB_NAME=foodopp_test_db JWT_SECRET=test-secret jest --runInBand",
-    "test:setup": "createdb foodopp_test_db && psql -q foodopp_test_db -f tests/schema.sql"
+    "test:setup": "npm run test:reset && dotenv -e .env -- cross-env PGPASSWORD=$DB_PASSWORD createdb -U postgres foodopp_test_db && dotenv -e .env -- cross-env PGPASSWORD=$DB_PASSWORD psql -U postgres -d foodopp_test_db -f schema.sql",
+    "test:reset": "dotenv -e .env -- cross-env PGPASSWORD=$DB_PASSWORD dropdb -U postgres foodopp_test_db"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +22,7 @@
   },
   "devDependencies": {
     "cross-env": "^10.1.0",
+    "dotenv-cli": "^11.0.0",
     "jest": "^29.7.0",
     "supertest": "^7.2.2"
   }
