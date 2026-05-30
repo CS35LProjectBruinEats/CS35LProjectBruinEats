@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cross-env DB_NAME=foodopp_test_db JWT_SECRET=test-secret jest --runInBand",
+    "test:setup": "createdb foodopp_test_db && psql -q foodopp_test_db -f tests/schema.sql"
   },
   "keywords": [],
   "author": "",
@@ -16,5 +17,10 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "jest": "^29.7.0",
+    "supertest": "^7.2.2"
   }
 }
