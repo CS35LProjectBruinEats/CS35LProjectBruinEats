@@ -15,6 +15,10 @@ let DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
+// Send the stored JWT on every request so the API can authenticate the user.
+const storedToken = localStorage.getItem('token');
+if (storedToken) axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+
 // Coordinate mapping for User Story 8
 const CAMPUS_LOCATIONS = [
   { name: 'Ackerman Union', lat: 34.0704, lng: -118.4441 },
@@ -139,6 +143,7 @@ function App() {
       const { token, user } = response.data;
       setToken(token);
       setUserRole(user.role);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       localStorage.setItem('token', token);
       localStorage.setItem('currentUser', user.username);
       localStorage.setItem('userRole', user.role);
@@ -148,6 +153,7 @@ function App() {
 
   const handleLogout = () => {
     setToken(''); setUserRole('');
+    delete axios.defaults.headers.common['Authorization'];
     localStorage.clear();
     setMessage("Logged out.");
   };
