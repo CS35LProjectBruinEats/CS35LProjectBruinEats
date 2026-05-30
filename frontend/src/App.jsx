@@ -364,7 +364,7 @@ function App() {
           <h2 style={{ color: 'black' }}>Sign Up / Login</h2>
           <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} style={{ display: 'block', margin: '10px auto', padding: '10px', width: '85%' }} />
           <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ display: 'block', margin: '10px auto', padding: '10px', width: '85%' }} />
-          <select value={role} onChange={(e) => setRole(e.target.value)} style={{ padding: '8px', marginBottom: '10px' }}>
+          <select data-testid="roleSelect" value={role} onChange={(e) => setRole(e.target.value)} style={{ padding: '8px', marginBottom: '10px' }}>
             <option value="customer">Customer</option>
             <option value="vendor">Vendor</option>
           </select>
@@ -385,12 +385,12 @@ function App() {
               <form onSubmit={handleSaveFood}>
                 <input type="text" placeholder="Name" value={foodData.name} required onChange={(e) => setFoodData({...foodData, name: e.target.value})} style={{ margin: '5px', padding: '8px', width: '40%' }} />
                 <input type="number" min="0" step = "any" placeholder="Cost" value={foodData.cost} required onChange={(e) => setFoodData({...foodData, cost: e.target.value})} style={{ margin: '5px', padding: '8px', width: '40%' }} />
-                <select value={foodData.locationName} onChange={(e) => setFoodData({...foodData, locationName: e.target.value})} style={{ margin: '5px', padding: '8px', width: '85%' }}>
+                <select data-testid="locationSelect" value={foodData.locationName} onChange={(e) => setFoodData({...foodData, locationName: e.target.value})} style={{ margin: '5px', padding: '8px', width: '85%' }}>
                     {CAMPUS_LOCATIONS.map(loc => <option key={loc.name} value={loc.name}>{loc.name}</option>)}
                 </select>
                 <textarea placeholder="Description" value={foodData.description} onChange={(e) => setFoodData({...foodData, description: e.target.value})} style={{ display: 'block', margin: '10px auto', width: '85%', height: '60px', padding: '8px' }} />
-                <input type="date" value={foodData.date} required onChange={(e) => setFoodData({...foodData, date: e.target.value})} style={{ margin: '5px', padding: '8px' }} />
-                <select value={foodData.mealPeriod} onChange={(e) => setFoodData({...foodData, mealPeriod: e.target.value})} style={{ padding: '8px' }}>
+                <input data-testid="date" type="date" value={foodData.date} required onChange={(e) => setFoodData({...foodData, date: e.target.value})} style={{ margin: '5px', padding: '8px' }} />
+                <select data-testid="mealPeriodSelect" value={foodData.mealPeriod} onChange={(e) => setFoodData({...foodData, mealPeriod: e.target.value})} style={{ padding: '8px' }}>
                   <option value="Breakfast">Breakfast</option><option value="Lunch">Lunch</option><option value="Dinner">Dinner</option>
                 </select>
                 <input type="number" min="1" placeholder="RSVP capacity (leave blank for unlimited)" value={foodData.rsvpCapacity} onChange={(e) => setFoodData({...foodData, rsvpCapacity: e.target.value})} style={{ display: 'block', margin: '10px auto', padding: '8px', width: '85%' }} />
@@ -452,12 +452,12 @@ function App() {
 
           {/* Filters Section */}
           <div style={{ background: '#fff', padding: '15px', borderRadius: '8px', marginBottom: '20px', display: 'flex', gap: '15px', justifyContent: 'center' }}>
-            <label>Meal: <select value={mealFilter} onChange={(e) => setMealFilter(e.target.value)}><option value="All">All</option><option value="Breakfast">Breakfast</option><option value="Lunch">Lunch</option><option value="Dinner">Dinner</option></select></label>
+            <label>Meal: <select data-testid="mealFilterSelect" value={mealFilter} onChange={(e) => setMealFilter(e.target.value)}><option value="All">All</option><option value="Breakfast">Breakfast</option><option value="Lunch">Lunch</option><option value="Dinner">Dinner</option></select></label>
             <label>Max $: <input type="number" value={costFilter} onChange={(e) => setCostFilter(e.target.value)} style={{ width: '60px' }}/></label>
           </div>
 
           {/* Listings Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+          <div data-testid="listingsGrid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
             {foodItems.map((item) => (
               <div key={item.opp_id} style={{ background: 'white', padding: '15px', borderRadius: '8px', textAlign: 'left', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ color: '#0073e6', margin: '0' }}>{item.opp_name}</h3>
@@ -608,7 +608,7 @@ function App() {
             </div>
         </div>
       )}
-      {message && <p style={{ marginTop: '20px' }} id="msg"><strong>{message}</strong></p>}
+      {message && <p style={{ marginTop: '20px' }} id="msg" data-testid="message"><strong>{message}</strong></p>}
     </div>
   );
 }

@@ -22,4 +22,29 @@ pool.query('SELECT NOW()', (err, res) => {
   }
 });
 
-module.exports = pool;
+async function resetDB() {
+  const client = await pool.connect();
+  try {
+    await client.query(`
+      TRUNCATE TABLE 
+        users, 
+        foodopps, 
+        saved_opportunities,
+        rsvps,
+        comments 
+      RESTART IDENTITY CASCADE;
+    `);
+  } 
+  catch (error) {
+    console.error('Failed to reset database:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+module.exports = {
+  pool,
+  resetDB
+};
+

@@ -76,6 +76,7 @@ CREATE TABLE comments (
 2. Install dependencies: npm install
 3. Install package to concurrently run frontend and backend: npm install npm-run-all --save-dev
 4. Install package for map: npm install react-leaflet leaflet
+5. Install Playwright for testing: npm init playwright@latest
 
 
 ### 5. Running the Application
@@ -83,5 +84,4 @@ CREATE TABLE comments (
 2. To exit: Ctrl+C, then Y to terminate both frontend and backend. 
 
 ### 6. Testing
-1. Signup: Create a new account on the registration page.
-2. Login: Log in with the credentials you just created.
+1. Inside the frontend folder, run: npx run test
