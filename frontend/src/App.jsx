@@ -80,8 +80,7 @@ function App() {
       const response = await axios.get('http://localhost:5001/api/food-opportunities', {
         params: {
           meal: mealFilter,
-          maxCost: costFilter,
-          username: localStorage.getItem('currentUser') || undefined
+          maxCost: costFilter
         }
       });
       setFoodItems(response.data);
@@ -91,9 +90,7 @@ function App() {
   //updates user's schedule (saved opportunities)
   const fetchSaved = async () => {
     try {
-        const response = await axios.get('http://localhost:5001/api/saved', {
-            params: { username: localStorage.getItem('currentUser') }
-        });
+        const response = await axios.get('http://localhost:5001/api/saved');
         setSavedItems(response.data);
     } catch (error) { console.error("Error fetching saved:", error); }
   };
@@ -113,7 +110,6 @@ function App() {
     }
     try {
       await axios.post('http://localhost:5001/api/comments', {
-        username: localStorage.getItem('currentUser'),
         opp_id: oppId,
         text
       });
@@ -160,12 +156,11 @@ function App() {
 
   const handleSaveFood = async (e) => {
     e.preventDefault();
-    const currentUsername = localStorage.getItem('currentUser');
     try {
       if (editingId) {
         await axios.put(`http://localhost:5001/api/food-opportunities/${editingId}`, foodData);
       } else {
-        await axios.post('http://localhost:5001/api/food-opportunities', { ...foodData, username: currentUsername });
+        await axios.post('http://localhost:5001/api/food-opportunities', foodData);
       }
       setEditingId(null);
       setFoodData({ name: '', description: '', date: '', cost: '', mealPeriod: 'Lunch', locationName: CAMPUS_LOCATIONS[0].name, rsvpCapacity: '' });
@@ -234,7 +229,6 @@ function App() {
   const handleSaveSchedule = async (opp_id) => {
     try {
         await axios.post('http://localhost:5001/api/saved', {
-            username: localStorage.getItem('currentUser'),
             opp_id: opp_id
         });
         setMessage('Saved to your schedule!');
@@ -277,7 +271,7 @@ function App() {
   const handleDeleteSchedule = async (opp_id) => {
     try {
         await axios.delete('http://localhost:5001/api/saved', {
-            data: { username: localStorage.getItem('currentUser'), opp_id: opp_id }
+            data: { opp_id: opp_id }
         });
         fetchSaved();
     } catch (err) {
@@ -288,7 +282,6 @@ function App() {
   const handleRsvp = async (oppId) => {
     try {
       await axios.post('http://localhost:5001/api/rsvp', {
-        username: localStorage.getItem('currentUser'),
         opp_id: oppId
       });
       setMessage('RSVP confirmed!');
@@ -301,7 +294,7 @@ function App() {
   const handleCancelRsvp = async (oppId) => {
     try {
       await axios.delete('http://localhost:5001/api/rsvp', {
-        data: { username: localStorage.getItem('currentUser'), opp_id: oppId }
+        data: { opp_id: oppId }
       });
       setMessage('RSVP cancelled.');
       fetchFood();
