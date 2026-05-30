@@ -10,6 +10,32 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// --- JWT VERIFICATION MIDDLEWARE ---
+// Reads the Bearer token, verifies its signature, and attaches the
+// authenticated user to req.user. Routes that act on a user's behalf must
+// derive identity from here, never from a username in the request body.
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Authentication required' });
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
+        if (err) return res.status(403).json({ error: 'Invalid or expired token' });
+        req.user = payload;
+        next();
+    });
+}
+
+// Authorize by role. Use after authenticateToken so req.user is populated.
+function requireRole(role) {
+    return (req, res, next) => {
+        if (req.user.role !== role) {
+            return res.status(403).json({ error: `Forbidden: ${role} role required` });
+        }
+        next();
+    };
+}
+
 // --- AUTHENTICATION ---
 
 app.post('/api/signup', async (req, res) => {
@@ -40,7 +66,7 @@ app.post('/api/login', async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password_hash);
         if (!isMatch) return res.status(400).json({ error: "Invalid Password" });
 
-        const token = jwt.sign({ userId: user.user_id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user.user_id, username: user.username, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
         
         // We send back user_id and username so the frontend can post correctly
         res.json({ token, user: { id: user.user_id, username: user.username, role: user.role } });
@@ -51,15 +77,11 @@ app.post('/api/login', async (req, res) => {
 
 // --- FOOD OPPORTUNITIES (Stories 3, 4, 7, 8) ---
 
-app.get('/api/food-opportunities', async (req, res) => {
-    const { meal, maxCost, username } = req.query;
+app.get('/api/food-opportunities', authenticateToken, async (req, res) => {
+    const { meal, maxCost } = req.query;
     try {
-        // Look up viewer's user_id (if any) so we can attach per-user RSVP state
-        let viewerId = null;
-        if (username) {
-            const viewer = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
-            if (viewer.rows.length > 0) viewerId = viewer.rows[0].user_id;
-        }
+        // Viewer comes from the verified token, used to attach per-user RSVP state.
+        const viewerId = req.user.userId;
 
         // We JOIN with users so the frontend can see the 'creator_username'.
         // Subqueries return current RSVP count and whether the viewer has RSVPed.
@@ -92,12 +114,11 @@ app.get('/api/food-opportunities', async (req, res) => {
     }
 });
 
-app.post('/api/food-opportunities', async (req, res) => {
-    const { name, description, date, cost, mealPeriod, locationName, username, rsvpCapacity } = req.body;
+app.post('/api/food-opportunities', authenticateToken, requireRole('vendor'), async (req, res) => {
+    const { name, description, date, cost, mealPeriod, locationName, rsvpCapacity } = req.body;
     try {
-        // First, find the user_id for the username provided
-        const userRes = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
-        const userId = userRes.rows[0].user_id;
+        // Creator comes from the verified token.
+        const userId = req.user.userId;
 
         const capacity = rsvpCapacity === '' || rsvpCapacity === undefined || rsvpCapacity === null
             ? null
@@ -116,10 +137,17 @@ app.post('/api/food-opportunities', async (req, res) => {
 
 // --- EDIT & DELETE (Stories 5, 6) ---
 
-app.put('/api/food-opportunities/:id', async (req, res) => {
+app.put('/api/food-opportunities/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { name, description, date, cost, mealPeriod, locationName, rsvpCapacity } = req.body;
     try {
+        // Ownership check: only the creator may edit this listing.
+        const existing = await pool.query('SELECT creator_user_id FROM foodopps WHERE opp_id = $1', [id]);
+        if (existing.rows.length === 0) return res.status(404).json({ error: 'Opportunity not found' });
+        if (existing.rows[0].creator_user_id !== req.user.userId) {
+            return res.status(403).json({ error: 'You can only edit your own listings' });
+        }
+
         const capacity = rsvpCapacity === '' || rsvpCapacity === undefined || rsvpCapacity === null
             ? null
             : Number(rsvpCapacity);
@@ -134,9 +162,17 @@ app.put('/api/food-opportunities/:id', async (req, res) => {
     }
 });
 
-app.delete('/api/food-opportunities/:id', async (req, res) => {
+app.delete('/api/food-opportunities/:id', authenticateToken, async (req, res) => {
+    const { id } = req.params;
     try {
-        await pool.query('DELETE FROM foodopps WHERE opp_id = $1', [req.params.id]);
+        // Ownership check: only the creator may delete this listing.
+        const existing = await pool.query('SELECT creator_user_id FROM foodopps WHERE opp_id = $1', [id]);
+        if (existing.rows.length === 0) return res.status(404).json({ error: 'Opportunity not found' });
+        if (existing.rows[0].creator_user_id !== req.user.userId) {
+            return res.status(403).json({ error: 'You can only delete your own listings' });
+        }
+
+        await pool.query('DELETE FROM foodopps WHERE opp_id = $1', [id]);
         res.json({ message: "Deleted" });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -181,13 +217,12 @@ Reflection: For the first todo, I was just using AI to bypass implementing the p
 For the second, the AI gave me the error code "23505". A quick google search told me that this is the psql error code for a unique_violation, which is what I needed. 
 Both of the solutions provided by the AI were exactly what I was looking for, so I decided to adopt both. 
 */
-app.post('/api/saved', async (req, res) => {
-    const { username, opp_id } = req.body;
+app.post('/api/saved', authenticateToken, async (req, res) => {
+    const { opp_id } = req.body;
     try {
-        const user = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
         await pool.query(
             'INSERT INTO saved_opportunities (user_id, opp_id) VALUES ($1, $2)',
-            [user.rows[0].user_id, opp_id]
+            [req.user.userId, opp_id]
         );
         res.json({ message: 'Saved!' });
     } catch (err) {
@@ -197,13 +232,12 @@ app.post('/api/saved', async (req, res) => {
 });
 
 //Remove an opportunity from schedule
-app.delete('/api/saved', async (req, res) => {
-    const { username, opp_id } = req.body;
+app.delete('/api/saved', authenticateToken, async (req, res) => {
+    const { opp_id } = req.body;
     try {
-        const user = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
         await pool.query(
             'DELETE FROM saved_opportunities WHERE user_id = $1 AND opp_id = $2',
-            [user.rows[0].user_id, opp_id]
+            [req.user.userId, opp_id]
         );
         res.json({ message: 'Deleted from schedule' });
     } catch (err) {
@@ -247,13 +281,11 @@ I realized that my approach was slightly incorrect, as I had to save the result 
 This AI response was exactly what I needed, so I decided to integrate it into my program.
 I also later added "ORDER BY f.opp_date ASC" based on a google search so that the schedule is in chronological order.
 */
-app.get('/api/saved', async (req, res) => {
-    const { username } = req.query;
+app.get('/api/saved', authenticateToken, async (req, res) => {
     try {
-        const user = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
         const result = await pool.query(
             'SELECT f.* FROM foodopps f JOIN saved_opportunities s ON f.opp_id = s.opp_id WHERE s.user_id = $1 ORDER BY f.opp_date ASC',
-            [user.rows[0].user_id]
+            [req.user.userId]
         );
         res.json(result.rows);
     } catch (err) {
@@ -263,13 +295,11 @@ app.get('/api/saved', async (req, res) => {
 
 // --- RSVP (story 10) ---
 
-app.post('/api/rsvp', async (req, res) => {
-    const { username, opp_id } = req.body;
+app.post('/api/rsvp', authenticateToken, async (req, res) => {
+    const { opp_id } = req.body;
     const client = await pool.connect();
     try {
-        const user = await client.query('SELECT user_id FROM users WHERE username = $1', [username]);
-        if (user.rows.length === 0) return res.status(400).json({ error: 'User not found' });
-        const userId = user.rows[0].user_id;
+        const userId = req.user.userId;
 
         // Lock the opportunity row so capacity check and insert are atomic
         await client.query('BEGIN');
@@ -298,14 +328,12 @@ app.post('/api/rsvp', async (req, res) => {
     }
 });
 
-app.delete('/api/rsvp', async (req, res) => {
-    const { username, opp_id } = req.body;
+app.delete('/api/rsvp', authenticateToken, async (req, res) => {
+    const { opp_id } = req.body;
     try {
-        const user = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
-        if (user.rows.length === 0) return res.status(400).json({ error: 'User not found' });
         const result = await pool.query(
             'DELETE FROM rsvps WHERE user_id = $1 AND opp_id = $2',
-            [user.rows[0].user_id, opp_id]
+            [req.user.userId, opp_id]
         );
         if (result.rowCount === 0) return res.status(404).json({ error: 'No RSVP to cancel' });
         res.json({ message: 'RSVP cancelled' });
@@ -316,7 +344,7 @@ app.delete('/api/rsvp', async (req, res) => {
 
 // --- COMMENTS (story 11) ---
 
-app.get('/api/comments', async (req, res) => {
+app.get('/api/comments', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(
             `SELECT c.comment_id, c.opp_id, c.comment_text, c.created_at, u.username
@@ -330,24 +358,29 @@ app.get('/api/comments', async (req, res) => {
     }
 });
 
-app.post('/api/comments', async (req, res) => {
-    const { username, opp_id, text } = req.body;
+app.post('/api/comments', authenticateToken, async (req, res) => {
+    const { opp_id, text } = req.body;
     if (!text || text.trim() === '') {
         return res.status(400).json({ error: 'Comment is empty' });
     }
     try {
-        const user = await pool.query('SELECT user_id FROM users WHERE username = $1', [username]);
-        if (user.rows.length === 0) return res.status(400).json({ error: 'User not found' });
+        // Author comes from the verified token, not the request body.
         const inserted = await pool.query(
             `INSERT INTO comments (user_id, opp_id, comment_text) VALUES ($1, $2, $3)
              RETURNING comment_id, opp_id, comment_text, created_at`,
-            [user.rows[0].user_id, opp_id, text.trim()]
+            [req.user.userId, opp_id, text.trim()]
         );
-        res.status(201).json({ ...inserted.rows[0], username });
+        res.status(201).json({ ...inserted.rows[0], username: req.user.username });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+// Only start the HTTP server when run directly (node index.js). When the app is
+// required by the test suite, we export it so Supertest can drive it in-process.
+if (require.main === module) {
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+}
+
+module.exports = app;
