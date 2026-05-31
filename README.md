@@ -4,6 +4,9 @@
 Before starting, ensure your system meets these requirements:
 * **Node.js**: Version **20.19+** or **22+**. (Check with `node -v`).
 Also install Postgres. Everything in the installer should be left as default, like the port being 5432 and the superuser being postgres. At the end, when it asks if you want to use the stack installer, decline (or just close it if you opened the stack installer).
+
+Note: * **PostgreSQL**: Version 18 recommended(tested with pgAdmin)
+
 ---
 ##  Step-by-Step Setup
 ### 1. Clone and Branch Selection
