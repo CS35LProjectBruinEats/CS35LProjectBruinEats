@@ -30,7 +30,7 @@ const CAMPUS_LOCATIONS = [
   { name: 'Hedrick Hall (The Hill)', lat: 34.0732, lng: -118.4523 },
   { name: 'Rieber Hall (The Hill)', lat: 34.0715, lng: -118.4515 },
   { name: 'Olympic Hall (The Hill)', lat: 34.0705, lng: -118.4530 },
-  { name: 'Centennial Hall (The Hill)', lat: 34.072920025841995, lng: -118.45389868602034 }
+  { name: 'Centennial Hall (The Hill)', lat: 34.0729, lng: -118.4538}
   
 ];
 
