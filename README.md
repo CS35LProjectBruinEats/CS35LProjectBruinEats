@@ -3,7 +3,7 @@
 ##  Prerequisites
 Before starting, ensure your system meets these requirements:
 * **Node.js**: Version **20.19+** or **22+**. (Check with `node -v`).
-Also install Postgres. Everything in the installer should be left as default, like the port being 5432 and the superuser being postgres. At the end, when it asks if you want to use the stack installer, decline (or just close it if you opened the stack installer).
+* **Install Postgres**. Everything in the installer should be left as default, like the port being 5432 and the superuser being postgres. At the end, when it asks if you want to use the stack installer, decline (or just close it if you opened the stack installer).
 
 Note: * **PostgreSQL**: Version 18 recommended(tested with pgAdmin)
 
@@ -33,8 +33,7 @@ Note: * **PostgreSQL**: Version 18 recommended(tested with pgAdmin)
 2. To exit: Ctrl+C, then Y to terminate both frontend and backend. 
 
 ### 5. Testing
-1. INSIDE the backend folder, run: npm run test:setup
-    Note that you only need to run this once.
+1. INSIDE the backend folder, run: npm run test:setup (note: you only need to run this once).
 2. Then run: npm run test
 
 ### 6. UML Diagrams
