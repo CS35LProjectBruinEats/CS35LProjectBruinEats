@@ -38,10 +38,11 @@ Note: * **PostgreSQL**: Version 18 recommended(tested with pgAdmin)
 2. Then run: npm run test
 
 ### 6. UML Diagrams
-State Machine Diagram:
-<img width="686" height="584" alt="image" src="https://github.com/user-attachments/assets/7e9b2bfa-1f4c-4823-b582-87fd7d6a614e" />
-<img width="682" height="608" alt="image" src="https://github.com/user-attachments/assets/b7435074-b8ff-4071-a559-8def45946f67" />
 
-Use Case Diagram:
+1.State Machine Diagram:
+<img width="682" height="608" alt="image" src="https://github.com/user-attachments/assets/b7435074-b8ff-4071-a559-8def45946f67" />
+<img width="686" height="584" alt="image" src="https://github.com/user-attachments/assets/7e9b2bfa-1f4c-4823-b582-87fd7d6a614e" />
+
+2.Use Case Diagram:
 <img width="705" height="610" alt="image" src="https://github.com/user-attachments/assets/eb4ef280-4a0e-4587-965c-00ab3a660804" />
 
