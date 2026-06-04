@@ -304,7 +304,7 @@ function App() {
     }
   };
 
-  const getOffset = (index, loc) => {
+  const computeOffset = (index, loc) => {
     const randDirection = Math.floor(Math.random() * (4));
     let lat, lng;
     const offset = 0.00018;
@@ -347,11 +347,11 @@ function App() {
     To work around this, I added a helper function getOffset (see above) that uses a random number generator to decide whether to increase or decrease the latitude and longitude. That way, the opportunities are better clustered around the actual building rather than stretching out linearly.
     I also experimentally decreased offset to 0.00018 because I found this to be the best separation.
     */}
-  const applyOffset = (items, currentItem, loc) => {
+  const offsetLocation = (items, currentItem, loc) => {
     const sameLocation = items.filter(i => i.location_name === currentItem.location_name);
     const index = sameLocation.findIndex(i => i.opp_id === currentItem.opp_id);
     
-    const [lat, lng] = getOffset(index, loc);
+    const [lat, lng] = computeOffset(index, loc);
     return [lat, lng];
   }
 
@@ -440,7 +440,7 @@ function App() {
                 const locationToUse = isEditing 
                   ? CAMPUS_LOCATIONS.find(l => l.name === foodData.locationName) 
                   : loc;
-                const position = applyOffset(foodItems, item, locationToUse);
+                const position = offsetLocation(foodItems, item, locationToUse);
                 return locationToUse ? (
                   <Marker key={item.opp_id} position={position}>
                     <Popup><strong>{item.opp_name}</strong><br />{item.meal_period_name} - ${item.cost}</Popup>
