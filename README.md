@@ -42,6 +42,9 @@ Note: * **PostgreSQL**: Version 18 recommended(tested with pgAdmin)
 <img width="682" height="608" alt="image" src="https://github.com/user-attachments/assets/b7435074-b8ff-4071-a559-8def45946f67" />
 <img width="686" height="584" alt="image" src="https://github.com/user-attachments/assets/7e9b2bfa-1f4c-4823-b582-87fd7d6a614e" />
 
-2.Use Case Diagram:
-<img width="705" height="610" alt="image" src="https://github.com/user-attachments/assets/eb4ef280-4a0e-4587-965c-00ab3a660804" />
+
+2. Entity Relationship Diagram
+<img width="1018" height="1101" alt="image" src="https://github.com/user-attachments/assets/6d6cab41-0bf0-40b7-b77e-316610050d32" />
+
+   
 
