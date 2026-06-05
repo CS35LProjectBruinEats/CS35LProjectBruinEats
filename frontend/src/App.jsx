@@ -330,7 +330,11 @@ function App() {
   }
 
   {/*
-    GenAI prompt: write me a helper function applyOffset that can slightly offset the latitude and longitude coordinates at a particular map location.
+    GenAI prompt: write me a helper function getOffsetPosition that can slightly offset the latitude and longitude coordinates at a particular map location. So far it just finds a list of which oporutnities have the same location:
+    const getOffsetPosition = (items, currentItem, loc) => {
+      const sameLocation = items.filter(i => i.location_name === currentItem.location_name);
+      [todo]
+
     GenAI response:
     const getOffsetPosition = (items, currentItem, loc) => {
       const sameLocation = items.filter(i => i.location_name === currentItem.location_name);
