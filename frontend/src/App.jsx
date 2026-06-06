@@ -124,6 +124,51 @@ function App() {
 
   useEffect(() => { if (token) { fetchFood(); fetchSaved(); fetchComments(); } }, [token, mealFilter, costFilter]);
 
+
+  {/*
+  GenAI Prompt:
+  For my cs35l project I must write a handleSignup function.
+  It should be called when the signup button is clicked, send
+  a POST request with the username, password, and role from
+  state, show a success message and clear the form fields on
+  success, and show an error message if the username is already
+  taken. Here is the skeleton:
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    try {
+      // todo: POST to signup endpoint with username, password, role
+      // todo: set success message and clear fields
+    }
+  };
+
+  GenAI Response:
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('http://localhost:5001/api/signup',
+        { username, password, role });
+      setMessage("User created! You can now login.");
+      setUsername(''); setPassword('');
+    } catch (error) {
+      setMessage(error.response?.data?.error || 'Signup failed');
+    }
+  };
+
+  My Reflection:
+  The AI structures the async POST request, passes the required
+  fields such as username from the component state. For successful
+  users, it clears the fields correctly and provides a message.
+  The role (customer or vendor) is not reset. However, this makes
+  sense because if the user wants to login straight after signing
+  up, this makes it easier. The use of optional chaining for error
+  handling is used to extract the server's error message from the
+  response body if it exists and fall back on a generic error
+  message if it doesn't. This method handles network errors and
+  server side validation errors very well. So by using my own
+  knowledge and the gen ai prompt i was able to accurately
+  implement this snippet of code.
+  */}
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
@@ -133,6 +178,61 @@ function App() {
     } catch (error) { setMessage(error.response?.data?.error || 'Signup failed'); }
   };
 
+  {/*
+  GenAI Prompt:
+  For my cs35l project I need to write a handleLogin function.
+  It should send a POST request with a username and password
+  from state. If successful, it should store the token and user
+  role in both React state and localStorage, set the axios
+  Authorization header so future requests are authenticated,
+  and show a message. If it fails, then an error message should
+  be shown.
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      // todo: POST to login endpoint with username and password
+      // todo: extract token and user from response
+      // todo: store token and role in state and localStorage
+      // todo: set axios Authorization header
+      // todo: show success message
+    } 
+  };
+
+  GenAI Response:
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        'http://localhost:5001/api/login',
+        { username, password }
+      );
+      const { token, user } = response.data;
+      setToken(token);
+      setUserRole(user.role);
+      axios.defaults.headers.common['Authorization'] =
+        `Bearer ${token}`;
+      localStorage.setItem('token', token);
+      localStorage.setItem('currentUser', user.username);
+      localStorage.setItem('userRole', user.role);
+      setMessage("Login successful!");
+    } catch (error) {
+      setMessage(error.response?.data?.error || 'Login failed');
+    }
+  };
+
+  My Reflection:
+  The GenAI destructures both token and user from the response.
+  This is important since we need multiple fields from the
+  server's reply. It stores the token in 3 places: React state,
+  axios default and localStorage, which all serve different needs.
+  State triggers a re-render to show the logged in UI, the axios
+  default allows any future API calls to include the Authorization
+  header, and localStorage is used so that the user stays logged
+  in even when the page is refreshed. I found this response
+  helpful because it covered all the authentication features
+  I needed help with. It reminded me to add the catch error.
+  */}
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -147,7 +247,22 @@ function App() {
       setMessage("Login successful!");
     } catch (error) { setMessage(error.response?.data?.error || 'Login failed'); }
   };
+   
+  {/*
+  GenAI Prompt:
+  create a handleLogout function.
+  It should clear the token and user role from React state,
+  remove the axios Authorization header so future requests are
+  no longer authenticated, clear everything from localStorage,
+  and show a message. Here is the skeleton:
 
+  const handleLogout = () => {
+    // todo: clear token and userRole from state
+    // todo: remove axios Authorization header
+    // todo: clear localStorage
+  };
+
+  GenAI Response:
   const handleLogout = () => {
     setToken(''); setUserRole('');
     delete axios.defaults.headers.common['Authorization'];
@@ -155,6 +270,79 @@ function App() {
     setMessage("Logged out.");
   };
 
+  My Reflection:
+  Compared to other functions, handleLogout is synchronous
+  because it only requires clearing local state and does not
+  need to make any API calls. This response uses delete on
+  axios.defaults.headers.common['Authorization'] rather than
+  setting it to an empty string, which is a better approach.
+  Setting it to an empty string would still send an Authorization
+  header on future requests, just with no value, but deleting it
+  removes the header entirely.This is a useful response because it does
+  the cleanup correctly.
+  */}
+  const handleLogout = () => {
+    setToken(''); setUserRole('');
+    delete axios.defaults.headers.common['Authorization'];
+    localStorage.clear();
+    setMessage("Logged out.");
+  };
+
+  {/*
+  GenAI Prompt:
+  I need to write a handleSaveFood function. It should handle
+  creating a new food opportunity and updating an existing one.
+  If editingId is set, it should send a PUT request to update
+  that specific opportunity, else it should send a POST request
+  to create a new one. After saving, it should reset the editing
+  state and the form fields, reload the food list, and provide
+  a success message. Here is the draft:
+
+  const handleSaveFood = async (e) => {
+    e.preventDefault();
+    try {
+      // todo: if editingId, PUT to update, else POST to create
+      // todo: reset editingId and foodData form fields
+      // todo: refresh food list
+      // todo: show success message
+    } catch (error) {
+      // todo: show error
+    }
+  };
+
+  GenAI Response:
+  const handleSaveFood = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingId) {
+        await axios.put(
+          `http://localhost:5001/api/food-opportunities/${editingId}`,
+          foodData
+        );
+      } else {
+        await axios.post(
+          'http://localhost:5001/api/food-opportunities',
+          foodData
+        );
+      }
+      setEditingId(null);
+      setFoodData({
+        name: '', description: '', date: '', cost: '',
+        mealPeriod: 'Lunch',
+        locationName: CAMPUS_LOCATIONS[0].name,
+        rsvpCapacity: ''
+      });
+      fetchFood();
+      setMessage("Saved successfully!");
+    } catch (error) { setMessage('Operation failed'); }
+  };
+
+  My Reflection:
+  The AI correctly implements the dual-purpose pattern where one
+  function handles both create and update by branching on whether
+  editingId is set. This response is good because it is able to help
+  me manage both creating and editing.
+  */}
   const handleSaveFood = async (e) => {
     e.preventDefault();
     try {
@@ -170,6 +358,15 @@ function App() {
     } catch (error) { setMessage('Operation failed'); }
   };
 
+
+  {/*
+  GenAI Prompt:
+  The startEdit function should be called when the Edit button
+  is clicked on a food listing.
+
+  
+
+  GenAI Response:
   const startEdit = (item) => {
     setEditingId(item.opp_id);
     setFoodData({
@@ -183,6 +380,64 @@ function App() {
     });
   };
 
+  My Reflection:
+  The GenAI response correctly maps the field names in the
+  database to the foodData state keys that the form uses.
+  The locationName uses a logical OR fallback to
+  CAMPUS_LOCATIONS[0].name if the location is not stored,
+  which means the dropdown always has a valid location.
+  */}
+  const startEdit = (item) => {
+    setEditingId(item.opp_id);
+    setFoodData({
+      name: item.opp_name,
+      description: item.opp_description,
+      date: item.opp_date.split('T')[0],
+      cost: item.cost,
+      mealPeriod: item.meal_period_name,
+      locationName: item.location_name || CAMPUS_LOCATIONS[0].name,
+      rsvpCapacity: item.rsvp_capacity ?? ''
+    });
+  };
+
+  {/*
+  GenAI Prompt:
+  I need help with the handleDelete function. It should
+  be called when the Delete button is clicked on a food
+  opportunity. It should ask the user for confirmation before
+  deleting and if confirmed, it should send a DELETE request to
+  remove that specific opportunity, then refresh both the food
+  opportunity list and the schedule. If there is a failure it
+  should show an error message. Here is the skeleton:
+
+  const handleDelete = async (id) => {
+    // todo: ask user for confirmation
+    // todo: if confirmed, send DELETE request with the id
+    // todo: refresh food list and saved schedule
+    // todo: show error message on failure
+  };
+
+  GenAI Response:
+  const handleDelete = async (id) => {
+    if (window.confirm("Delete this listing?")) {
+      try {
+        await axios.delete(
+          `http://localhost:5001/api/food-opportunities/${id}`
+        );
+        fetchFood();
+        fetchSaved();
+      } catch (error) { setMessage("Failed to delete."); }
+    }
+  };
+
+  My Reflection:
+  By using window.confirm() as a simple confirmation dialog
+  before deleting, any accidental deletions can be stopped.
+  The delete logic is found in the if block so pressing cancel
+  prevents any issues. The DELETE request appends the id as a
+  parameter in the URL. I found this response helpful because
+  it covers all my needs for deletion.
+  */}
   const handleDelete = async (id) => {
     if (window.confirm("Delete this listing?")) {
       try {
